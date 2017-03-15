@@ -1,0 +1,730 @@
+Player:  Black (X)
+. . . . . . . .
+. . . . . . . .
+. . . . . . . .
+. . . O X . . .
+. . . X O . . .
+. . . . ? . . .
+. . . . . . . .
+. . . . . . . .
+Move:	(4, 5)
+==========================
+
+Player:  White (O)
+. . . . . . . .
+. . . . . . . .
+. . . . . . . .
+. . . O X . . .
+. . . X X . . .
+. . . . X ? . .
+. . . . . . . .
+. . . . . . . .
+Move:	(5, 5)
+==========================
+
+Player:  Black (X)
+. . . . . . . .
+. . . . . . . .
+. . . . . . . .
+. . . O X . . .
+. . . X O ? . .
+. . . . X O . .
+. . . . . . . .
+. . . . . . . .
+Move:	(5, 4)
+==========================
+
+Player:  White (O)
+. . . . . . . .
+. . . . . . . .
+. . . . . . . .
+. . . O X . . .
+. . . X X X . .
+. . . ? X O . .
+. . . . . . . .
+. . . . . . . .
+Move:	(3, 5)
+==========================
+
+Player:  Black (X)
+. . . . . . . .
+. . . . . . . .
+. . . . . . . .
+. . . O X . . .
+. . . O X X . .
+. . . O O O . .
+. . . . . ? . .
+. . . . . . . .
+Move:	(5, 6)
+==========================
+
+Player:  White (O)
+. . . . . . . .
+. . . . . . . .
+. . . . ? . . .
+. . . O X . . .
+. . . O X X . .
+. . . O O X . .
+. . . . . X . .
+. . . . . . . .
+Move:	(4, 2)
+==========================
+
+Player:  Black (X)
+. . . . . . . .
+. . . . . . . .
+. . . . O . . .
+. . . O O . . .
+. . . O O X . .
+. . ? O O X . .
+. . . . . X . .
+. . . . . . . .
+Move:	(2, 5)
+==========================
+
+Player:  White (O)
+. . . . . . . .
+. . . . . . . .
+. . . . O . . .
+. . . O O . . .
+. . . O O X . .
+. . X X X X . .
+. . . ? . X . .
+. . . . . . . .
+Move:	(3, 6)
+==========================
+
+Player:  Black (X)
+. . . . . . . .
+. . . . . . . .
+. . . . O . . .
+. . . O O . . .
+. . ? O O X . .
+. . X O X X . .
+. . . O . X . .
+. . . . . . . .
+Move:	(2, 4)
+==========================
+
+Player:  White (O)
+. . . . . . . .
+. . . . . . . .
+. . . . O . . .
+. . . O O . . .
+. . X X X X . .
+. . X O X X . .
+. . . O ? X . .
+. . . . . . . .
+Move:	(4, 6)
+==========================
+
+Player:  Black (X)
+. . . . . . . .
+. . . . . . . .
+. . . . O . . .
+. . . O O . . .
+. . X X O X . .
+. . X O O X . .
+. . . O O X . .
+. . . . ? . . .
+Move:	(4, 7)
+==========================
+
+Player:  White (O)
+. . . . . . . .
+. . . . . . . .
+. . . . O . . .
+. . . O O . . .
+. . X X O X . .
+. . X O O X . .
+. . . X O X . .
+. . ? . X . . .
+Move:	(2, 7)
+==========================
+
+Player:  Black (X)
+. . . . . . . .
+. . . . . . . .
+. . . . O . . .
+. . . O O . . .
+. . X X O X . .
+. . X O O X . .
+. . . O O X . .
+. . O . X ? . .
+Move:	(5, 7)
+==========================
+
+Player:  White (O)
+. . . . . . . .
+. . . . . . . .
+. . . . O . . .
+. . . O O . ? .
+. . X X O X . .
+. . X X O X . .
+. . . O X X . .
+. . O . X X . .
+Move:	(6, 3)
+==========================
+
+Player:  Black (X)
+. . . . . . . .
+. . . . . . . .
+. . . . O . . .
+. . . O O . O .
+. . X X O O . .
+. . X X O X . .
+. . ? O X X . .
+. . O . X X . .
+Move:	(2, 6)
+==========================
+
+Player:  White (O)
+. . . . . . . .
+. . . . . . . .
+. . . . O . . .
+. . . O O . O .
+. . X X O O . .
+. . X X O X . .
+. . X X X X . .
+. ? O . X X . .
+Move:	(1, 7)
+==========================
+
+Player:  Black (X)
+. . . . . . . .
+. . . . . . . .
+. . . ? O . . .
+. . . O O . O .
+. . X X O O . .
+. . X O O X . .
+. . O X X X . .
+. O O . X X . .
+Move:	(3, 2)
+==========================
+
+Player:  White (O)
+. . . . . . . .
+. . . . . . . .
+. . . X O . . .
+. . . X O . O .
+. . X X O O . .
+. . X O O X ? .
+. . O X X X . .
+. O O . X X . .
+Move:	(6, 5)
+==========================
+
+Player:  Black (X)
+. . . . . . . .
+. . . . . . . .
+. . . X O . . .
+. . . X O . O .
+. . X X O O . .
+. . X O O O O ?
+. . O X X X . .
+. O O . X X . .
+Move:	(7, 5)
+==========================
+
+Player:  White (O)
+. . . . . . . .
+. . ? . . . . .
+. . . X O . . .
+. . . X O . O .
+. . X X O O . .
+. . X X X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(2, 1)
+==========================
+
+Player:  Black (X)
+. . . . . . . .
+. . O . . . . .
+. . . O O ? . .
+. . . X O . O .
+. . X X O O . .
+. . X X X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(5, 2)
+==========================
+
+Player:  White (O)
+. . . . . . . .
+. . O . ? . . .
+. . . O O X . .
+. . . X X . O .
+. . X X O O . .
+. . X X X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(4, 1)
+==========================
+
+Player:  Black (X)
+. . . . . . . .
+. . O . O ? . .
+. . . O O O . .
+. . . X X . O .
+. . X X O O . .
+. . X X X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(5, 1)
+==========================
+
+Player:  White (O)
+. . . . . ? . .
+. . O . O X . .
+. . . O X O . .
+. . . X X . O .
+. . X X O O . .
+. . X X X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(5, 0)
+==========================
+
+Player:  Black (X)
+. . . . . O . .
+. . O . O O . .
+. . ? O X O . .
+. . . X X . O .
+. . X X O O . .
+. . X X X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(2, 2)
+==========================
+
+Player:  White (O)
+. . . . . O . .
+. . O . O O . .
+. ? X X X O . .
+. . . X X . O .
+. . X X O O . .
+. . X X X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(1, 2)
+==========================
+
+Player:  Black (X)
+. . . . . O . .
+. . O . O O . .
+. O O O O O . .
+. . . X X . O .
+. . X X O O ? .
+. . X X X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(6, 4)
+==========================
+
+Player:  White (O)
+. . . . . O . .
+. . O . O O . .
+. O O O O O . .
+. . . X X ? O .
+. . X X X X X .
+. . X X X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(5, 3)
+==========================
+
+Player:  Black (X)
+. . . . . O . .
+. . O . O O . .
+. O O O O O . ?
+. . . X X O O .
+. . X X O X X .
+. . X O X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(7, 2)
+==========================
+
+Player:  White (O)
+. . . . . O . .
+. . O . O O . .
+. O O O O O . X
+. . . X X O X .
+. . X X O X X ?
+. . X O X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(7, 4)
+==========================
+
+Player:  Black (X)
+. . . . . O . .
+. . O . O O . .
+. O O O O O . X
+. . . X X O O ?
+. . X X O O O O
+. . X O X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(7, 3)
+==========================
+
+Player:  White (O)
+. . . . . O . .
+. . O . O O . .
+. O O O O O ? X
+. . . X X X X X
+. . X X O O X X
+. . X O X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(6, 2)
+==========================
+
+Player:  Black (X)
+. . . . . O . .
+. . O ? O O . .
+. O O O O O O X
+. . . X X O X X
+. . X X O O X X
+. . X O X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(3, 1)
+==========================
+
+Player:  White (O)
+. . . . . O . .
+. . O X O O . .
+. O O X X O O X
+. ? . X X X X X
+. . X X O O X X
+. . X O X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(1, 3)
+==========================
+
+Player:  Black (X)
+. . . . . O . .
+. . O X O O . .
+. O O X X O O X
+. O ? X X X X X
+. . O X O O X X
+. . X O X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(2, 3)
+==========================
+
+Player:  White (O)
+. . . . ? O . .
+. . O X O O . .
+. O O X X O O X
+. O X X X X X X
+. . X X O O X X
+. . X O X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(4, 0)
+==========================
+
+Player:  Black (X)
+. . . . O O . .
+. . O O O O . .
+. O O X X O O X
+? O X X X X X X
+. . X X O O X X
+. . X O X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(0, 3)
+==========================
+
+Player:  White (O)
+. . . . O O . .
+. . O O O O . .
+? O O X X O O X
+X X X X X X X X
+. . X X O O X X
+. . X O X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(0, 2)
+==========================
+
+Player:  Black (X)
+. . . . O O . .
+. . O O O O . .
+O O O X X O O X
+X O X X X X X X
+. ? O X O O X X
+. . X O X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(1, 4)
+==========================
+
+Player:  White (O)
+. . . . O O . .
+. . O O O O . .
+O O O X X O O X
+X O X X X X X X
+. X X X O O X X
+? . X O X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(0, 5)
+==========================
+
+Player:  Black (X)
+. . . . O O . .
+. . O O O O . .
+O O O O X O O X
+X O O X X X X X
+? O X X O O X X
+O . X O X X X X
+. . O X X X . .
+. O O . X X . .
+Move:	(0, 4)
+==========================
+
+Player:  White (O)
+. . . . O O . .
+. . O O O O . .
+O O O O X O O X
+X O O X X X X X
+X X X X O O X X
+O . X O X X X X
+. ? O X X X . .
+. O O . X X . .
+Move:	(1, 6)
+==========================
+
+Player:  Black (X)
+. . . . O O . .
+. . O O O O . .
+O O O O X O O X
+X O O X O X X X
+X X X O O O X X
+O ? O O X X X X
+. O O X X X . .
+. O O . X X . .
+Move:	(1, 5)
+==========================
+
+Player:  White (O)
+. . . . O O . .
+. . O O O O . .
+O O O O X O O X
+X O O X O X X X
+X X X O O O X X
+O X X X X X X X
+. O O X X X . .
+. O O ? X X . .
+Move:	(3, 7)
+==========================
+
+Player:  Black (X)
+. . . . O O . .
+. . O O O O . .
+O O O O X O O X
+X O O X O X X X
+X X X O O O X X
+O X X O X X X X
+. O O O X X . .
+? O O O X X . .
+Move:	(0, 7)
+==========================
+
+Player:  White (O)
+. . . . O O . .
+. . O O O O . .
+O O O O X O O X
+X O O X O X X X
+X X X O O O X X
+O X X O X X X X
+? X O O X X . .
+X X X X X X . .
+Move:	(0, 6)
+==========================
+
+Player:  Black (X)
+. . ? . O O . .
+. . O O O O . .
+O O O O O O O X
+X O O O O X X X
+X X O O O O X X
+O O X O X X X X
+O O O O X X . .
+X X X X X X . .
+Move:	(2, 0)
+==========================
+
+Player:  White (O)
+. . X . O O . .
+. . X X O O . .
+O O X O X O O X
+X O X O O X X X
+X X X O O O X X
+O O X O X X X X
+O O O O X X . .
+X X X X X X ? .
+Move:	(6, 7)
+==========================
+
+Player:  Black (X)
+. . X . O O . .
+. . X X O O . .
+O O X O X O O X
+X O X O O X X X
+X X X O O O X X
+O O X O O X X X
+O O O O X O . .
+X X X X X X O ?
+Move:	(7, 7)
+==========================
+
+Player:  White (O)
+. ? X . O O . .
+. . X X O O . .
+O O X O X O O X
+X O X O O X X X
+X X X O O O X X
+O O X O O X X X
+O O O O X O . .
+X X X X X X X X
+Move:	(1, 0)
+==========================
+
+Player:  Black (X)
+? O X . O O . .
+. . O X O O . .
+O O X O X O O X
+X O X O O X X X
+X X X O O O X X
+O O X O O X X X
+O O O O X O . .
+X X X X X X X X
+Move:	(0, 0)
+==========================
+
+Player:  White (O)
+X X X ? O O . .
+. . O X O O . .
+O O X O X O O X
+X O X O O X X X
+X X X O O O X X
+O O X O O X X X
+O O O O X O . .
+X X X X X X X X
+Move:	(3, 0)
+==========================
+
+Player:  Black (X)
+X X X O O O . .
+. . O O O O . ?
+O O X O X O O X
+X O X O O X X X
+X X X O O O X X
+O O X O O X X X
+O O O O X O . .
+X X X X X X X X
+Move:	(7, 1)
+==========================
+
+Player:  White (O)
+X X X O O O . .
+. . O O O O . X
+O O X O X O X X
+X O X O O X X X
+X X X O O O X X
+O O X O O X X X
+O O O O X O . ?
+X X X X X X X X
+Move:	(7, 6)
+==========================
+
+Player:  Black (X)
+X X X O O O . .
+. . O O O O . X
+O O X O X O X X
+X O X O O X X X
+X X X O O O X X
+O O X O O X O X
+O O O O X O ? O
+X X X X X X X X
+Move:	(6, 6)
+==========================
+
+Player:  White (O)
+X X X O O O . ?
+. . O O O O . X
+O O X O X O X X
+X O X O O X X X
+X X X O O O X X
+O O X O O X X X
+O O O O X X X O
+X X X X X X X X
+Move:	(7, 0)
+==========================
+
+Player:  Black (X)
+X X X O O O . O
+. . O O O O ? O
+O O X O X O X O
+X O X O O X X O
+X X X O O O X O
+O O X O O X X O
+O O O O X X X O
+X X X X X X X X
+Move:	(6, 1)
+==========================
+
+Player:  White (O)
+X X X O O O . O
+. ? O O O O X O
+O O X O X X X O
+X O X O X X X O
+X X X X O O X O
+O O X O O X X O
+O O O O X X X O
+X X X X X X X X
+Move:	(1, 1)
+==========================
+
+Player:  Black (X)
+X X X O O O ? O
+. O O O O O X O
+O O O O X X X O
+X O X O X X X O
+X X X X O O X O
+O O X O O X X O
+O O O O X X X O
+X X X X X X X X
+Move:	(6, 0)
+==========================
+
+Player:  Black (X)
+X X X X X X X O
+? O O O O X X O
+O O O O X X X O
+X O X O X X X O
+X X X X O O X O
+O O X O O X X O
+O O O O X X X O
+X X X X X X X X
+Move:	(0, 1)
+==========================
+
+Player:  White (O)
+X X X X X X X O
+X X X X X X X O
+X X O O X X X O
+X O X O X X X O
+X X X X O O X O
+O O X O O X X O
+O O O O X X X O
+X X X X X X X X
+Black has won by:(43, 21)
