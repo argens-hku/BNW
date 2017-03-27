@@ -1,7 +1,7 @@
 from othello import State
 
 policyNN = "PolicyNetwork/policy_network.h5"
-valueNN = "ValueNetwork/value_network2.h5"
+valueNN = "ValueNetwork/value_network9.h5"
 size = 8
 
 #  --------------- Non-program Specific ----------------  #
@@ -44,11 +44,11 @@ def getNetworks ():
     global policyNN
     global valueNN
 
-    q = "Which policy network would you like to use?"
-    file = Path (policyNN)
-    while not file.is_file():
-        policyNN = "PolicyNetwork/" + query (question = q)
-        file = Path (policyNN)
+    # q = "Which policy network would you like to use?"
+    # file = Path (policyNN)
+    # while not file.is_file():
+    #     policyNN = "PolicyNetwork/" + query (question = q)
+    #     file = Path (policyNN)
 
     q = "Which value network would you like to use?"
     file = Path (valueNN)
@@ -142,6 +142,8 @@ class AbstractBoard ():
         return
 
     def end (self):
+        while 1:
+            x = 1
         return
 
 from othello import *
@@ -152,12 +154,15 @@ class Computer ():
 
     original = None
     valueNetwork = None
-    policyNetwork = None
+    maximum = 100
+    neutral = 0
+    minimum = -100
+    # policyNetwork = None
     v = []
 
     def __init__ (self):
         self.valueNetwork = load_model (valueNN)
-        self.policyNetowrk = load_model (policyNN)
+        # self.policyNetowrk = load_model (policyNN)
         return
  
     def convertToNN (self, line, player):
@@ -196,6 +201,12 @@ class Computer ():
             black.append (row_black)
             border.append (row_border)
 
+        border [0][0] = border [0][size - 1] = border [size - 1][0] = border [size - 1][size - 1] = 4
+        border [0][1] = border [1][0] =  border [1][1] = -1
+        border [0][size - 2] = border [1][size - 1] =  border [1][size - 2] = -1
+        border [size - 2][0] = border [size - 1][1] =  border [size - 2][1] = -1
+        border [size - 2][size - 1] = border [size - 1][size - 2] = border [size - 1][size - 1] =  -1
+
         e = np.asarray (empty)
         w = np.asarray (white)
         bl = np.asarray (black)
@@ -214,44 +225,80 @@ class Computer ():
         # print ("b.shape", b.shape)
         return board
 
+    def nnValue (self, state, player):
+
+        NN = []
+        NN.append (self.convertToNN (state.mirrored (), player))
+        X = np.asarray (NN)
+        value = self.valueNetwork.predict (X)
+        return value [0][0]
+
+    def alphabeta (self, state, depth, alpha, beta, originalPlayer):
+        
+        a = alpha
+        b = beta
+
+        if state.player == 0:
+            score = originalPlayer * (state.bc - state.wc)
+            if score > 0:
+                return self.maximum
+            if score == 0:
+                return self.neutral
+            return self.minimum
+
+        if depth == 0:
+            return self.nnValue (state, originalPlayer)
+
+        if state.player == originalPlayer:
+            v = self.minimum
+            for i in range (len(state.validMoves)):
+                (x, y, _) = state.validMoves [i]
+                childState = state.move (x, y)
+                childState.absBoard = None
+                childStateValue = self.alphabeta (childState, depth -1, alpha, beta, originalPlayer)
+                if childStateValue > v:
+                    v = childStateValue
+                if v > a:
+                    a = v
+                if b <= a:
+                    break
+            return v
+        else:
+            v = self.maximum
+            for i in range (len(state.validMoves)):
+                (x, y, _) = state.validMoves [i]
+                childState = state.move (x, y)
+                childState.absBoard = None
+                childStateValue = self.alphabeta (childState, depth -1, alpha, beta, originalPlayer)
+                if childStateValue < v:
+                    v = childStateValue
+                if v < b:
+                    b = v
+                if b <= a:
+                    break
+            return v           
+
     def move (self, state):
+
+        if len (state.validMoves) == 0:
+            return None
 
         if len (state.validMoves) == 1:
             (x, y, _) = state.validMoves [0]
             return (x, y)
 
-        v2 = []
+        depth = 3
+        maxValue = self.minimum
+        maxIndex = 0
+        originalPlayer = state.player
         for i in range (len (state.validMoves)):
             (x, y, _) = state.validMoves [i]
-            temp = state.move (x, y)
-            v = []
-
-            for j in range (len(temp.validMoves)):
-                (x, y, _) = temp.validMoves [j]
-                temp2 = temp.move (x, y)
-                
-                NNs = []
-
-                for k in range (len(temp2.validMoves)):
-                    (x, y, _) = temp2.validMoves [k]
-                    temp3 = temp2.move (x, y)
-                    smallNN = self.convertToNN (temp3.mirrored(), state.player)
-                    NNs.append (smallNN)
-
-
-                X = np.asarray(NNs)
-                print (X.shape)
-                X = X.reshape (X.shape [0], X.shape [1] * X.shape [2] * X.shape [3])
-                value = self.valueNetwork.predict (X)
-
-                maxValue = max (value)
-                v.append (maxValue)
-
-            maxV = max (v)
-            v2.append (maxV)
-
-        index, _ = max(enumerate(v2), key=operator.itemgetter(1))
-        (x, y, _) = state.validMoves [index]
+            value = self.alphabeta (state.move (x, y), depth, self.minimum, self.maximum, originalPlayer)
+            if value > maxValue:
+                maxIndex = i
+                maxValue = value
+        
+        (x, y, _) =  state.validMoves [maxIndex]
         return (x, y)
 
 # ========================================== #

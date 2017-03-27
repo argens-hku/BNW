@@ -37,7 +37,7 @@ def query (question = "", choices = []):
 
 	return answer
 
-def convertToNN (line):
+def convertToNN (line, option = "border"):
 	board = []
 	white = []
 	black = []
@@ -72,6 +72,13 @@ def convertToNN (line):
 		white.append (row_white)
 		black.append (row_black)
 		border.append (row_border)
+
+	if option == "corner_and_border":
+		border [0][0] = border [0][size - 1] = border [size - 1][0] = border [size - 1][size - 1] = 4
+		border [0][1] = border [1][0] =  border [1][1] = -1
+		border [0][size - 2] = border [1][size - 1] =  border [1][size - 2] = -1
+		border [size - 2][0] = border [size - 1][1] =  border [size - 2][1] = -1
+		border [size - 2][size - 1] = border [size - 1][size - 2] = border [size - 1][size - 1] =  -1
 
 	e = np.asarray (empty)
 	w = np.asarray (white)
@@ -129,50 +136,89 @@ def mse (Y_pred, Y):
 
 	return s/c
 
-def doTests (X, Y):
+def doTests (X1, X2, Y):
 	global result
 
-	valueNN = "ValueNetwork/CNN.h5"
-	model = load_model (valueNN)
-	Y_pred = model.predict(X, verbose=True)
-	result.append (("CNN: ", mse (Y_pred, Y)))
+	#-------------------------------------------
+
+	# valueNN = "ValueNetwork/value_network.h5"
+	# model = load_model (valueNN)
+	# Y_pred = model.predict(X1, verbose=True)
+	# result.append (("value_network.h5: ", mse (Y_pred, Y)))
+
+	# #-------------------------------------------
+
+	# valueNN = "ValueNetwork/value_network1.h5"
+	# model = load_model (valueNN)
+	# Y_pred = model.predict(X1, verbose=True)
+	# result.append (("value_network1.h5: ", mse (Y_pred, Y)))
+
+	# #-------------------------------------------
+
+	# valueNN = "ValueNetwork/value_network2.h5"
+	# model = load_model (valueNN)
+	# Y_pred = model.predict(X1, verbose=True)
+	# result.append (("value_network2.h5: ", mse (Y_pred, Y)))
+
+	# #-------------------------------------------
+
+	# valueNN = "ValueNetwork/value_network3.h5"
+	# model = load_model (valueNN)
+	# Y_pred = model.predict(X1, verbose=True)
+	# result.append (("value_network3.h5: ", mse (Y_pred, Y)))
+
+	# #-------------------------------------------
+
+	# valueNN = "ValueNetwork/value_network4.h5"
+	# model = load_model (valueNN)
+	# Y_pred = model.predict(X1, verbose=True)
+	# result.append (("value_network4.h5: ", mse (Y_pred, Y)))
 
 	#-------------------------------------------
 
-	valueNN = "ValueNetwork/CNN_deeper.h5"
+	valueNN = "ValueNetwork/value_network5.h5"
 	model = load_model (valueNN)
-	Y_pred = model.predict(X, verbose=True)
-	result.append (("CNNDeeper: ", mse (Y_pred, Y)))
+	Y_pred = model.predict(X2, verbose=True)
+	result.append (("value_network5.h5: ", mse (Y_pred, Y)))
+
+	# -------------------------------------------
+
+	valueNN = "ValueNetwork/value_network6.h5"
+	model = load_model (valueNN)
+	Y_pred = model.predict(X2, verbose=True)
+	result.append (("value_network6.h5: ", mse (Y_pred, Y)))
 
 	#-------------------------------------------
 
-	valueNN = "ValueNetwork/DropoutCNN.h5"
+	valueNN = "ValueNetwork/value_network7.h5"
 	model = load_model (valueNN)
-	Y_pred = model.predict(X, verbose=True)
-	result.append (("DropoutCNN: ", mse (Y_pred, Y)))
+	Y_pred = model.predict(X2, verbose=True)
+	result.append (("value_network7.h5: ", mse (Y_pred, Y)))
 
 	#-------------------------------------------
 
-	X = X.reshape (X.shape [0], X.shape [1] * X.shape [2] * X.shape [3])
-
-	valueNN = "ValueNetwork/deep_simple.h5"
+	valueNN = "ValueNetwork/value_network8.h5"
 	model = load_model (valueNN)
-	Y_pred = model.predict(X, verbose=True)
-	result.append (("Deep Simple: ", mse (Y_pred, Y)))
+	Y_pred = model.predict(X2, verbose=True)
+	result.append (("value_network8.h5: ", mse (Y_pred, Y)))
 
 	#-------------------------------------------
 
-	valueNN = "ValueNetwork/deeper.h5"
+	valueNN = "ValueNetwork/value_network9.h5"
 	model = load_model (valueNN)
-	Y_pred = model.predict(X, verbose=True)
-	result.append (("Deeper: ", mse (Y_pred, Y)))
+	Y_pred = model.predict(X2, verbose=True)
+	result.append (("value_network9.h5: ", mse (Y_pred, Y)))
 
-for order in range (3):
+	#-------------------------------------------
+	# X = X.reshape (X.shape [0], X.shape [1] * X.shape [2] * X.shape [3])
 
-	filename = trainingFilename + str (order + 1)
+for order in range (2):
+
+	filename = trainingFilename + str (order + 6)
 	print (filename)
 
-	list_X = []
+	list_X1 = []
+	list_X2 = []
 	list_move = []
 	list_winner = []
 
@@ -186,7 +232,8 @@ for order in range (3):
 		if gameCounter > gameEnd:
 			break
 		gameCounter += 1
-		board = convertToNN (line)
+		board1 = convertToNN (line, "border")
+		board2 = convertToNN (line, "corner_and_border")
 
 		x = int (line [65])
 		y = int (line [68])
@@ -197,19 +244,22 @@ for order in range (3):
 
 		list_winner.append (winner)
 		# list_move.append (createOutputGrid (x, y))
-		list_X.append (board)
+		list_X1.append (board1)
+		list_X2.append (board2)
 
 	import numpy as np
 
-	X = np.asarray (list_X)
+	X1 = np.asarray (list_X1)
+	X2 = np.asarray (list_X2)
 	Y = np.asarray (list_winner)
 	# Y = np.asarray (list_move)
 
-	print ("X_shape", X.shape)
+	print ("X1_shape", X1.shape)
+	print ("X2_shape", X2.shape)
 	print ("Y_shape", Y.shape)
 
 	result.append ((order+1, "-------------------------------------"))
-	doTests (X, Y)
+	doTests (X1, X2, Y)
 
 clearScreen ()
 

@@ -91,6 +91,12 @@ def convertToNN (line):
 		black.append (row_black)
 		border.append (row_border)
 
+	border [0][0] = border [0][size - 1] = border [size - 1][0] = border [size - 1][size - 1] = 4
+	border [0][1] = border [1][0] =  border [1][1] = -1
+	border [0][size - 2] = border [1][size - 1] =  border [1][size - 2] = -1
+	border [size - 2][0] = border [size - 1][1] =  border [size - 2][1] = -1
+	border [size - 2][size - 1] = border [size - 1][size - 2] = border [size - 1][size - 1] =  -1
+	
 	e = np.asarray (empty)
 	w = np.asarray (white)
 	bl = np.asarray (black)
@@ -191,10 +197,10 @@ Y = np.asarray (list_winner)
 # Y = np.asarray (list_move)
 
 print ("X_shape", X.shape)
-print ("Y_shape", Y.shape)
+# print ("Y_shape", Y.shape)
 
 # Y = Y.reshape (Y.shape[0], Y.shape[1] * Y.shape[2])
-# print ("Y_shape", Y.shape)
+print ("Y_shape", Y.shape)
 
 
 from sklearn.model_selection import train_test_split
@@ -210,7 +216,7 @@ seed = 6
 np.random.seed (seed)
 
 # ----- hyperparameter ----- #
-epoch_ = 50
+epoch_ = 500
 lr_ = 0.001
 momentum_ = 0.9
 decay_ = lr_/epoch_
@@ -227,21 +233,22 @@ from keras.constraints import maxnorm
 
 model = Sequential()
 model.add (Convolution2D (32, 3, 3, input_shape = (4, 8, 8), border_mode = "same", activation = "relu", W_constraint = maxnorm(3), dim_ordering = "th"))
-model.add (Dropout(0.5))
+model.add (Dropout(0.3))
 model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
-model.add (Dropout(0.5))
+model.add (Dropout(0.3))
 model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
 model.add (Flatten ())
 # model.add (Dense (512, input_shape = (256, ), activation = 'relu', W_constraint = maxnorm(2)))
 # model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
 # model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
-model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
-model.add (Dropout(0.5))
-model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
-model.add (Dropout(0.5))
-model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
-model.add (Dropout(0.5))
-model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.3))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.3))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.3))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.3))
 model.add (Dense (64))
 model.add (Dense (1))
 sgd = SGD(lr=lr_, momentum=momentum_, decay=decay_, nesterov=False)
@@ -253,7 +260,9 @@ from keras.callbacks import EarlyStopping
 early_stopping = EarlyStopping (monitor = "val_loss", patience = 5, min_delta = 0)
 model.fit(X_train, Y_train, nb_epoch= epoch_, batch_size=batch_size_, verbose = True, validation_split = 0.1, callbacks = [early_stopping])
 
-model.save (unclash ("ValueNetwork/value_network", ".h5"))
+filename = unclash ("ValueNetwork/value_network", ".h5")
+print (filename)
+model.save (filename)
 
 Y_test_pred = model.predict(X_test, verbose=True)
 
