@@ -37,17 +37,21 @@ def query (question = "", choices = []):
 
 	return answer
 
+from othello import State
+
 def convertToNN (line, option = "border"):
 	board = []
 	white = []
 	black = []
 	empty = []
 	border = []
+	moves = []
 	for i in range (size):
 		row_white = []
 		row_black = []
 		row_empty = []
 		row_border = []
+		row_total = []
 		for j in range (size):
 			if i == 0 or j == 0 or i == size-1 or j == size-1:
 				row_border.append (1)
@@ -58,22 +62,26 @@ def convertToNN (line, option = "border"):
 				row_empty.append (1)
 				row_black.append (0)
 				row_white.append (0)
+				row_total.append (0)
 			else:
 				if piece == 1:
 					row_empty.append (0)
 					row_black.append (1)
 					row_white.append (0)
+					row_total.append (1)
 				else:
 					row_empty.append (0)
 					row_black.append (0)
 					row_white.append (1)
+					row_total.append (-1)
 
 		empty.append (row_empty)
 		white.append (row_white)
 		black.append (row_black)
 		border.append (row_border)
+		moves.append (row_total)
 
-	if option == "corner_and_border":
+	if option == "corner_and_border" or option == "moves and cb":
 		border [0][0] = border [0][size - 1] = border [size - 1][0] = border [size - 1][size - 1] = 4
 		border [0][1] = border [1][0] =  border [1][1] = -1
 		border [0][size - 2] = border [1][size - 1] =  border [1][size - 2] = -1
@@ -89,6 +97,19 @@ def convertToNN (line, option = "border"):
 	board.append (w)
 	board.append (bl)
 	board.append (bd)
+
+	if option == "moves and cb":
+
+		state = State (board = moves)
+		for i in range (size):
+			for j in range (size):
+				moves [i][j] = 0
+
+		for (x, y, _) in state.validMoves:
+			moves [x][y] = 1
+
+		mv = np.asarray (moves)
+		board.append (mv)
 
 	# print ("e", e.shape)
 	# print ("w", w.shape)
@@ -146,75 +167,45 @@ def doTests (X1, X2, Y):
 	# Y_pred = model.predict(X1, verbose=True)
 	# result.append (("value_network.h5: ", mse (Y_pred, Y)))
 
-	# #-------------------------------------------
+	#-------------------------------------------
 
-	# valueNN = "ValueNetwork/value_network1.h5"
+	# valueNN = "ValueNetwork/value_network5.h5"
 	# model = load_model (valueNN)
-	# Y_pred = model.predict(X1, verbose=True)
-	# result.append (("value_network1.h5: ", mse (Y_pred, Y)))
-
-	# #-------------------------------------------
-
-	# valueNN = "ValueNetwork/value_network2.h5"
-	# model = load_model (valueNN)
-	# Y_pred = model.predict(X1, verbose=True)
-	# result.append (("value_network2.h5: ", mse (Y_pred, Y)))
-
-	# #-------------------------------------------
-
-	# valueNN = "ValueNetwork/value_network3.h5"
-	# model = load_model (valueNN)
-	# Y_pred = model.predict(X1, verbose=True)
-	# result.append (("value_network3.h5: ", mse (Y_pred, Y)))
-
-	# #-------------------------------------------
-
-	# valueNN = "ValueNetwork/value_network4.h5"
-	# model = load_model (valueNN)
-	# Y_pred = model.predict(X1, verbose=True)
-	# result.append (("value_network4.h5: ", mse (Y_pred, Y)))
+	# Y_pred = model.predict(X2, verbose=True)
+	# result.append (("value_network5.h5: ", mse (Y_pred, Y)))
 
 	#-------------------------------------------
 
-	valueNN = "ValueNetwork/value_network5.h5"
+	valueNN = "ValueNetwork/value_network22.h5"
 	model = load_model (valueNN)
 	Y_pred = model.predict(X2, verbose=True)
-	result.append (("value_network5.h5: ", mse (Y_pred, Y)))
-
-	# -------------------------------------------
-
-	valueNN = "ValueNetwork/value_network6.h5"
-	model = load_model (valueNN)
-	Y_pred = model.predict(X2, verbose=True)
-	result.append (("value_network6.h5: ", mse (Y_pred, Y)))
+	result.append (("value_network22.h5: ", mse (Y_pred, Y)))
 
 	#-------------------------------------------
 
-	valueNN = "ValueNetwork/value_network7.h5"
+	valueNN = "ValueNetwork/value_network23.h5"
 	model = load_model (valueNN)
 	Y_pred = model.predict(X2, verbose=True)
-	result.append (("value_network7.h5: ", mse (Y_pred, Y)))
+	result.append (("value_network23.h5: ", mse (Y_pred, Y)))
 
 	#-------------------------------------------
 
-	valueNN = "ValueNetwork/value_network8.h5"
+	valueNN = "ValueNetwork/value_network24.h5"
 	model = load_model (valueNN)
 	Y_pred = model.predict(X2, verbose=True)
-	result.append (("value_network8.h5: ", mse (Y_pred, Y)))
+	result.append (("value_network24.h5: ", mse (Y_pred, Y)))
 
 	#-------------------------------------------
 
-	valueNN = "ValueNetwork/value_network9.h5"
+	valueNN = "ValueNetwork/value_network25.h5"
 	model = load_model (valueNN)
 	Y_pred = model.predict(X2, verbose=True)
-	result.append (("value_network9.h5: ", mse (Y_pred, Y)))
+	result.append (("value_network25.h5: ", mse (Y_pred, Y)))
 
-	#-------------------------------------------
-	# X = X.reshape (X.shape [0], X.shape [1] * X.shape [2] * X.shape [3])
 
-for order in range (2):
+for order in range (7):
 
-	filename = trainingFilename + str (order + 6)
+	filename = trainingFilename + str (order + 1)
 	print (filename)
 
 	list_X1 = []
@@ -233,7 +224,7 @@ for order in range (2):
 			break
 		gameCounter += 1
 		board1 = convertToNN (line, "border")
-		board2 = convertToNN (line, "corner_and_border")
+		board2 = convertToNN (line, "moves and cb")
 
 		x = int (line [65])
 		y = int (line [68])

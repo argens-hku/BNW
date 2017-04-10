@@ -1,7 +1,12 @@
 from othello import State
 
 policyNN = "PolicyNetwork/policy_network.h5"
-valueNN = "ValueNetwork/value_network9.h5"
+valueNN = "ValueNetwork/value_network11.h5"
+
+border_bool = True
+corner_bool = True
+liberty_bool = True
+
 size = 8
 
 #  --------------- Non-program Specific ----------------  #
@@ -130,6 +135,7 @@ class AbstractBoard ():
         # self.expand ()
 
     def updateDisplay (self):
+        print ("Trying to update display")
         if self.displayBoard == None:
             return
         self.displayBoard.update()
@@ -146,76 +152,138 @@ class AbstractBoard ():
             x = 1
         return
 
-from othello import *
-from keras.models import load_model
-import operator
+# ========================================== #
 
 class Computer ():
 
-    original = None
-    valueNetwork = None
-    maximum = 100
-    neutral = 0
-    minimum = -100
-    # policyNetwork = None
-    v = []
+    tree = None
+    evaluator = None
 
     def __init__ (self):
-        self.valueNetwork = load_model (valueNN)
-        # self.policyNetowrk = load_model (policyNN)
+        valueNetwork = load_model (valueNN)
+        self.evaluator = Evaluator (valueNetwork, border = border_bool, corner = corner_bool, liberty = liberty_bool)
+        self.tree = Tree (self.evaluator)
+
         return
- 
-    def convertToNN (self, line, player):
-        board = []
+
+    def updateMove (x. y):
+        self.tree.updateMove (x, y)
+
+    def move (self):
+        (x, y) = self.tree.getBestMove ()
+        return (x, y)
+
+from keras.models import load_model
+class Evaluator ():
+
+    def __init__ (self, valueNN, border = "False", corner = "False", liberty = "False"):
+        self.valueNN = valueNN
+        self.border = border
+        self.corner = corner
+        self.liberty = liberty
+        return
+
+    def evaluate (self, state, player):
+        NN = []
+        NN.append (self.convertToNN (state.mirrored (), player))
+        X = np.asarray (NN)
+        value = self.valueNN.predict (X)
+        return value [0][0]
+
+    def convertToNN (self, board, player):
+        input_NN = []
         white = []
         black = []
         empty = []
-        border = []
+
+        if self.border or self.corner:
+            border = []
+
+        if self.liberty:
+            moves = []
+
         for i in range (size):
             row_white = []
             row_black = []
             row_empty = []
-            row_border = []
+
+            if self.border or self.corner:
+                row_border = []
+
+            if self.liberty:
+                row_total = []
+
             for j in range (size):
-                if i == 0 or j == 0 or i == size-1 or j == size-1:
-                    row_border.append (1)
+
+                if self.border == True:
+                    if i == 0 or j == 0 or i == size-1 or j == size-1:
+                        row_border.append (1)
+                    else:
+                        row_border.append (0)
                 else:
-                    row_border.append (0)
+                    if self.corner == True:
+                        row_border.append (0)
+
                 piece = line [i][j] * player
                 if piece == 0:
                     row_empty.append (1)
                     row_black.append (0)
                     row_white.append (0)
+                    if self.liberty:
+                        row_total.append (0)
                 else:
                     if piece == 1:
                         row_empty.append (0)
                         row_black.append (1)
                         row_white.append (0)
+                        if self.liberty:
+                            row_total.append (1)
                     else:
                         row_empty.append (0)
                         row_black.append (0)
                         row_white.append (1)
+                        if self.liberty:
+                            row_total.append (-1)
 
             empty.append (row_empty)
             white.append (row_white)
             black.append (row_black)
-            border.append (row_border)
 
-        border [0][0] = border [0][size - 1] = border [size - 1][0] = border [size - 1][size - 1] = 4
-        border [0][1] = border [1][0] =  border [1][1] = -1
-        border [0][size - 2] = border [1][size - 1] =  border [1][size - 2] = -1
-        border [size - 2][0] = border [size - 1][1] =  border [size - 2][1] = -1
-        border [size - 2][size - 1] = border [size - 1][size - 2] = border [size - 1][size - 1] =  -1
+            if self.border or self.corner:
+                border.append (row_border)
+            if self.liberty:
+                moves.append (row_total)
+
+        if self.corner:
+            border [0][0] = border [0][size - 1] = border [size - 1][0] = border [size - 1][size - 1] = 4
+            border [0][1] = border [1][0] =  border [1][1] = -1
+            border [0][size - 2] = border [1][size - 1] =  border [1][size - 2] = -1
+            border [size - 2][0] = border [size - 1][1] =  border [size - 2][1] = -1
+            border [size - 2][size - 1] = border [size - 1][size - 2] = border [size - 1][size - 1] =  -1
 
         e = np.asarray (empty)
         w = np.asarray (white)
         bl = np.asarray (black)
-        bd = np.asarray (border)
 
-        board.append (e)
-        board.append (w)
-        board.append (bl)
-        board.append (bd)
+        input_NN.append (e)
+        input_NN.append (w)
+        input_NN.append (bl)
+
+        if self.border or self.corner:
+            bd = np.asarray (border)
+            input_NN.append (bd)
+        
+        if self.liberty:
+            state = State (board = moves)
+            for i in range (size):
+                for j in range (size):
+                    moves [i][j] = 0
+
+            for (x, y, _) in state.validMoves:
+                moves [x][y] = 1
+
+            mv = np.asarray (moves)
+            input_NN.append (mv)
 
         # print ("e", e.shape)
         # print ("w", w.shape)
@@ -223,83 +291,205 @@ class Computer ():
 
         # b = np.asarray (board)
         # print ("b.shape", b.shape)
-        return board
+        return input_NN
 
-    def nnValue (self, state, player):
+from othello import *
+from collections import deque
 
-        NN = []
-        NN.append (self.convertToNN (state.mirrored (), player))
-        X = np.asarray (NN)
-        value = self.valueNetwork.predict (X)
-        return value [0][0]
+class Tree ():
 
-    def alphabeta (self, state, depth, alpha, beta, originalPlayer):
+    currentNode = None
+    originalPlayer = 0
+    leaf = deque ([])
+    depth = 0
+
+    def __init__ (self, evaluator):
+        self.evaluator = evaluator
+
+    def updateMove (self, x, y):
+
+        if self.currentNode = None:
+            state = State ()
+            state = state.move (x, y)
+            self.currentNode = Node (state = state)
+            self.currentNode.evaluator = self.evaluator
+            return
+
+        temp = self.currentNode
+        self.currentNode.reduceDepth ()
+        self.depth -= 1
+        self.currentNode = self.currentNode.children ((x, y))
+        del temp
+
+        return
+
+    def getBestMove (self):
+
+        if originalPlayer == 0:
+            self.originalPlayer = self.currentState.player
+            self.currentNode.originalPlayer = self.originalPlayer
+
+        if self.depth < 5:
+            currentNode.evaluate (depth = 2)
+            currentNode.evaluate (depth = 5)
+
+        self.depth -= 1
+        return currentNode.getBestMove ()
+
+    def expand (self):
+
+        self.depth += 1
+        self.currentNode.evaluate (depth = self.depth)
+        return
+
+
+class Node ():
+
+    minimum = -100
+    maximium = 100
+    neutral = 0
+
+    def __init__ (self, state = None, depth = 0, alpha = self.minimum, beta = self.maximium, parent = None):
+        self.state = State
+        self.depth = depth
+        self.alpha = alpha
+        self.beta = beta
+        self.parent = parent
+
+        self.player = self.state.player
+        self.children = {}
+        self.value = None
+        self.order = []
+
+        if self.parent != None:
+            self.evaluator = self.parent.evaluator
+            self.originalPlayer = self.parent.originalPlayer
+
+        return
+
+    def evaluate (self, depth = 0):
+        if depth == 0 or len (self.state.validMoves) == 0:
+            if self.value != None:
+                return self.value
+            self.value = self.evaluator.evaluate (self.state, self.originalPlayer)
+            return self.value
         
-        a = alpha
-        b = beta
+        if self.depth >= depth:
+            if self.value != None:
+                return self.value
 
-        if state.player == 0:
-            score = originalPlayer * (state.bc - state.wc)
+        if self.state.player == 0:
+            score = self.originalPlayer * (self.state.bc - self.state.wc)
             if score > 0:
-                return self.maximum
+                return self.maximium
             if score == 0:
                 return self.neutral
-            return self.minimum
+            if score < 0:
+                return self.minimum
 
-        if depth == 0:
-            return self.nnValue (state, originalPlayer)
-
-        if state.player == originalPlayer:
-            v = self.minimum
-            for i in range (len(state.validMoves)):
-                (x, y, _) = state.validMoves [i]
-                childState = state.move (x, y)
-                childState.absBoard = None
-                childStateValue = self.alphabeta (childState, depth -1, alpha, beta, originalPlayer)
-                if childStateValue > v:
-                    v = childStateValue
-                if v > a:
-                    a = v
-                if b <= a:
-                    break
-            return v
+        if len (self.order) == 0:
+            ordering = range (len (self.state.validMoves))
         else:
-            v = self.maximum
-            for i in range (len(state.validMoves)):
-                (x, y, _) = state.validMoves [i]
-                childState = state.move (x, y)
-                childState.absBoard = None
-                childStateValue = self.alphabeta (childState, depth -1, alpha, beta, originalPlayer)
-                if childStateValue < v:
-                    v = childStateValue
-                if v < b:
-                    b = v
-                if b <= a:
+            ordering = self.order
+        newOrder = {}
+
+        if self.state.player == self.originalPlayer:
+            
+            for i in ordering:
+                newOrder [i] = self.minimum
+
+            v = self.minimum
+            for i in ordering:
+                
+                (x, y, _) = self.state.validMoves [i]
+                
+                if (x, y) in self.children:
+                    self.children.updateAlphaBeta (alpha = self.alpha, beta = self.beta)
+
+                else:
+                    childState = self.state.move (x, y)
+                    childNode = Node (state = childState, alpha = self.alpha, beta = self.beta, parent = self)
+                    self.children [(x, y)] = childNode
+
+                childvalue = self.children [(x, y)].evaluate (depth - 1)
+                newOrder [(x, y)] = childvalue
+                if childvalue > v:
+                    v = childvalue
+                if v > self.alpha:
+                    self.alpha = v
+                if self.beta <= self.alpha
                     break
-            return v           
 
-    def move (self, state):
+            self.order = sorted (newOrder.items(), key = operator.itemgetter (0), reverse = True)
+            return v
 
-        if len (state.validMoves) == 0:
-            return None
+        else:
 
-        if len (state.validMoves) == 1:
-            (x, y, _) = state.validMoves [0]
-            return (x, y)
+            for i in ordering:
+                newOrder [i] == self.maximium
 
-        depth = 3
-        maxValue = self.minimum
-        maxIndex = 0
-        originalPlayer = state.player
-        for i in range (len (state.validMoves)):
-            (x, y, _) = state.validMoves [i]
-            value = self.alphabeta (state.move (x, y), depth, self.minimum, self.maximum, originalPlayer)
-            if value > maxValue:
-                maxIndex = i
-                maxValue = value
+            v = self.maximium
+
+            for i in ordering:
+
+                (x, y, _) = self.state.validMoves [i]
+
+                if (x, y) in self.children:
+                    self.children.updateAlphaBeta (alpha = self.alpha, beta = self.beta)
+
+                else:
+                    childState = self.state.move (x, y)
+                    childNode = Node (state = childState, alpha = self.alpha, beta = self.beta, parent = self)
+                    self.children [(x, y)] = childNode
+
+                childvalue = self.children [(x, y)].evaluate (depth -1)
+                newOrder [(x, y)] = childNode
+                if childvalue  < v:
+                    v = childvalue
+                if v < self.beta:
+                    self.beta = v
+                if self.beta <= self.alpha:
+                    break
+
+            self.order = sorted (newOrder.items(), key = operator.itemgetter (0))
+            return v
+
+    def updateAlphaBeta (self, alpha, beta):
+        self.alpha = alpha
+        self.beta = beta
+        return
+
+
+
         
-        (x, y, _) =  state.validMoves [maxIndex]
-        return (x, y)
+
+
+    def expand (self, depth = 0):
+        if depth = 0:
+            end_expansion = 0
+            for i in range (len (self.state.validMoves)):
+                (x, y, _) = self.state.validMoves [i]
+                childState = self.state.move (x, y)
+                childNode = Node (state = childState, depth = self.depth + 1, alpha = self.alpha, beta = self.beta, parent = self)
+                self.children ((x, y): childNode)
+        return
+
+    def reduceDepth (self):
+        self.depth -= 1
+        for _, child in self.children.items ():
+            child.reduceDepth ()
+
+    def getBestMove (self):
+        self.reduceDepth ()
+        maxValue = -100
+        bestMove = (-1, -1)
+        for move, child in self.children.items ():
+            if child.value > maxValue:
+                maxValue = child.value
+                bestMove = move
+
+        return move
+
 
 # ========================================== #
 

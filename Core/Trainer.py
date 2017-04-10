@@ -55,17 +55,21 @@ def createOutputGrid (x, y):
 		grid.append (row)
 	return grid
 
+from othello import State
+
 def convertToNN (line):
 	board = []
 	white = []
 	black = []
 	empty = []
 	border = []
+	moves = []
 	for i in range (size):
 		row_white = []
 		row_black = []
 		row_empty = []
 		row_border = []
+		row_total = []
 		for j in range (size):
 			if i == 0 or j == 0 or i == size-1 or j == size-1:
 				row_border.append (1)
@@ -76,20 +80,24 @@ def convertToNN (line):
 				row_empty.append (1)
 				row_black.append (0)
 				row_white.append (0)
+				row_total.append (0)
 			else:
 				if piece == 1:
 					row_empty.append (0)
 					row_black.append (1)
 					row_white.append (0)
+					row_total.append (1)
 				else:
 					row_empty.append (0)
 					row_black.append (0)
 					row_white.append (1)
+					row_total.append (-1)
 
 		empty.append (row_empty)
 		white.append (row_white)
 		black.append (row_black)
 		border.append (row_border)
+		moves.append (row_total)
 
 	border [0][0] = border [0][size - 1] = border [size - 1][0] = border [size - 1][size - 1] = 4
 	border [0][1] = border [1][0] =  border [1][1] = -1
@@ -97,15 +105,25 @@ def convertToNN (line):
 	border [size - 2][0] = border [size - 1][1] =  border [size - 2][1] = -1
 	border [size - 2][size - 1] = border [size - 1][size - 2] = border [size - 1][size - 1] =  -1
 	
+	state = State (board = moves)
+	for i in range (size):
+		for j in range (size):
+			moves [i][j] = 0
+
+	for (x, y, _) in state.validMoves:
+		moves [x][y] = 1
+
 	e = np.asarray (empty)
 	w = np.asarray (white)
 	bl = np.asarray (black)
 	bd = np.asarray (border)
+	mv = np.asarray (moves)
 
 	board.append (e)
 	board.append (w)
 	board.append (bl)
 	board.append (bd)
+	board.append (mv)
 
 	# print ("e", e.shape)
 	# print ("w", w.shape)
@@ -232,10 +250,80 @@ from sklearn.metrics import mean_squared_error
 from keras.constraints import maxnorm
 
 model = Sequential()
-model.add (Convolution2D (32, 3, 3, input_shape = (4, 8, 8), border_mode = "same", activation = "relu", W_constraint = maxnorm(3), dim_ordering = "th"))
+model.add (Convolution2D (32, 3, 3, input_shape = (5, 8, 8), border_mode = "same", activation = "relu", W_constraint = maxnorm(3), dim_ordering = "th"))
 model.add (Dropout(0.3))
 model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
 model.add (Dropout(0.3))
+model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
+model.add (Flatten ())
+# model.add (Dense (512, input_shape = (256, ), activation = 'relu', W_constraint = maxnorm(2)))
+# model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+# model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.4))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.4))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.4))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.4))
+model.add (Dense (64))
+model.add (Dense (1))
+sgd = SGD(lr=lr_, momentum=momentum_, decay=decay_, nesterov=False)
+# model.compile(loss='categorical_crossentropy', optimizer=sgd)
+model.compile(loss='mse', optimizer=sgd)
+
+from keras.callbacks import EarlyStopping
+
+early_stopping = EarlyStopping (monitor = "val_loss", patience = 5, min_delta = 0)
+model.fit(X_train, Y_train, nb_epoch= epoch_, batch_size=batch_size_, verbose = True, validation_split = 0.1, callbacks = [early_stopping])
+
+filename = unclash ("ValueNetwork/value_network", ".h5")
+print (filename)
+model.save (filename)
+
+# ===================================================================
+
+model = Sequential()
+model.add (Convolution2D (32, 3, 3, input_shape = (5, 8, 8), border_mode = "same", activation = "relu", W_constraint = maxnorm(3), dim_ordering = "th"))
+model.add (Dropout(0.3))
+model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
+model.add (Dropout(0.3))
+model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
+model.add (Flatten ())
+# model.add (Dense (512, input_shape = (256, ), activation = 'relu', W_constraint = maxnorm(2)))
+# model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+# model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.5))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.5))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.5))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.5))
+model.add (Dense (64))
+model.add (Dense (1))
+sgd = SGD(lr=lr_, momentum=momentum_, decay=decay_, nesterov=False)
+# model.compile(loss='categorical_crossentropy', optimizer=sgd)
+model.compile(loss='mse', optimizer=sgd)
+
+from keras.callbacks import EarlyStopping
+
+early_stopping = EarlyStopping (monitor = "val_loss", patience = 5, min_delta = 0)
+model.fit(X_train, Y_train, nb_epoch= epoch_, batch_size=batch_size_, verbose = True, validation_split = 0.1, callbacks = [early_stopping])
+
+filename = unclash ("ValueNetwork/value_network", ".h5")
+print (filename)
+model.save (filename)
+
+# ===================================================================
+
+model = Sequential()
+model.add (Convolution2D (32, 3, 3, input_shape = (5, 8, 8), border_mode = "same", activation = "relu", W_constraint = maxnorm(3), dim_ordering = "th"))
+model.add (Dropout(0.4))
+model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
+model.add (Dropout(0.4))
 model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
 model.add (Flatten ())
 # model.add (Dense (512, input_shape = (256, ), activation = 'relu', W_constraint = maxnorm(2)))
@@ -263,6 +351,249 @@ model.fit(X_train, Y_train, nb_epoch= epoch_, batch_size=batch_size_, verbose = 
 filename = unclash ("ValueNetwork/value_network", ".h5")
 print (filename)
 model.save (filename)
+
+# ===================================================================
+
+model = Sequential()
+model.add (Convolution2D (32, 3, 3, input_shape = (5, 8, 8), border_mode = "same", activation = "relu", W_constraint = maxnorm(3), dim_ordering = "th"))
+model.add (Dropout(0.4))
+model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
+model.add (Dropout(0.4))
+model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
+model.add (Flatten ())
+# model.add (Dense (512, input_shape = (256, ), activation = 'relu', W_constraint = maxnorm(2)))
+# model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+# model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.5))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.5))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.5))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.5))
+model.add (Dense (64))
+model.add (Dense (1))
+sgd = SGD(lr=lr_, momentum=momentum_, decay=decay_, nesterov=False)
+# model.compile(loss='categorical_crossentropy', optimizer=sgd)
+model.compile(loss='mse', optimizer=sgd)
+
+from keras.callbacks import EarlyStopping
+
+early_stopping = EarlyStopping (monitor = "val_loss", patience = 5, min_delta = 0)
+model.fit(X_train, Y_train, nb_epoch= epoch_, batch_size=batch_size_, verbose = True, validation_split = 0.1, callbacks = [early_stopping])
+
+filename = unclash ("ValueNetwork/value_network", ".h5")
+print (filename)
+model.save (filename)
+
+# ===================================================================
+
+model = Sequential()
+model.add (Convolution2D (32, 3, 3, input_shape = (5, 8, 8), border_mode = "same", activation = "relu", W_constraint = maxnorm(3), dim_ordering = "th"))
+model.add (Dropout(0.5))
+model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
+model.add (Dropout(0.5))
+model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
+model.add (Flatten ())
+# model.add (Dense (512, input_shape = (256, ), activation = 'relu', W_constraint = maxnorm(2)))
+# model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+# model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.3))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.3))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.3))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.3))
+model.add (Dense (64))
+model.add (Dense (1))
+sgd = SGD(lr=lr_, momentum=momentum_, decay=decay_, nesterov=False)
+# model.compile(loss='categorical_crossentropy', optimizer=sgd)
+model.compile(loss='mse', optimizer=sgd)
+
+from keras.callbacks import EarlyStopping
+
+early_stopping = EarlyStopping (monitor = "val_loss", patience = 5, min_delta = 0)
+model.fit(X_train, Y_train, nb_epoch= epoch_, batch_size=batch_size_, verbose = True, validation_split = 0.1, callbacks = [early_stopping])
+
+filename = unclash ("ValueNetwork/value_network", ".h5")
+print (filename)
+model.save (filename)
+
+# ===================================================================
+
+model = Sequential()
+model.add (Convolution2D (32, 3, 3, input_shape = (5, 8, 8), border_mode = "same", activation = "relu", W_constraint = maxnorm(3), dim_ordering = "th"))
+model.add (Dropout(0.5))
+model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
+model.add (Dropout(0.5))
+model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
+model.add (Flatten ())
+# model.add (Dense (512, input_shape = (256, ), activation = 'relu', W_constraint = maxnorm(2)))
+# model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+# model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.4))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.4))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.4))
+model.add (Dense (1024, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.4))
+model.add (Dense (64))
+model.add (Dense (1))
+sgd = SGD(lr=lr_, momentum=momentum_, decay=decay_, nesterov=False)
+# model.compile(loss='categorical_crossentropy', optimizer=sgd)
+model.compile(loss='mse', optimizer=sgd)
+
+from keras.callbacks import EarlyStopping
+
+early_stopping = EarlyStopping (monitor = "val_loss", patience = 5, min_delta = 0)
+model.fit(X_train, Y_train, nb_epoch= epoch_, batch_size=batch_size_, verbose = True, validation_split = 0.1, callbacks = [early_stopping])
+
+filename = unclash ("ValueNetwork/value_network", ".h5")
+print (filename)
+model.save (filename)
+
+# ===================================================================
+
+model = Sequential()
+model.add (Convolution2D (32, 3, 3, input_shape = (5, 8, 8), border_mode = "same", activation = "relu", W_constraint = maxnorm(3), dim_ordering = "th"))
+model.add (Dropout(0.3))
+model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
+model.add (Dropout(0.3))
+model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
+model.add (Flatten ())
+# model.add (Dense (512, input_shape = (256, ), activation = 'relu', W_constraint = maxnorm(2)))
+# model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+# model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.4))
+model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.4))
+model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.4))
+model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.4))
+model.add (Dense (64))
+model.add (Dense (1))
+sgd = SGD(lr=lr_, momentum=momentum_, decay=decay_, nesterov=False)
+# model.compile(loss='categorical_crossentropy', optimizer=sgd)
+model.compile(loss='mse', optimizer=sgd)
+
+from keras.callbacks import EarlyStopping
+
+early_stopping = EarlyStopping (monitor = "val_loss", patience = 5, min_delta = 0)
+model.fit(X_train, Y_train, nb_epoch= epoch_, batch_size=batch_size_, verbose = True, validation_split = 0.1, callbacks = [early_stopping])
+
+filename = unclash ("ValueNetwork/value_network", ".h5")
+print (filename)
+model.save (filename)
+
+# ===================================================================
+
+model = Sequential()
+model.add (Convolution2D (32, 3, 3, input_shape = (5, 8, 8), border_mode = "same", activation = "relu", W_constraint = maxnorm(3), dim_ordering = "th"))
+model.add (Dropout(0.4))
+model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
+model.add (Dropout(0.4))
+model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
+model.add (Flatten ())
+# model.add (Dense (512, input_shape = (256, ), activation = 'relu', W_constraint = maxnorm(2)))
+# model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+# model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.3))
+model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.3))
+model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.3))
+model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.3))
+model.add (Dense (64))
+model.add (Dense (1))
+sgd = SGD(lr=lr_, momentum=momentum_, decay=decay_, nesterov=False)
+# model.compile(loss='categorical_crossentropy', optimizer=sgd)
+model.compile(loss='mse', optimizer=sgd)
+
+from keras.callbacks import EarlyStopping
+
+early_stopping = EarlyStopping (monitor = "val_loss", patience = 5, min_delta = 0)
+model.fit(X_train, Y_train, nb_epoch= epoch_, batch_size=batch_size_, verbose = True, validation_split = 0.1, callbacks = [early_stopping])
+
+filename = unclash ("ValueNetwork/value_network", ".h5")
+print (filename)
+model.save (filename)
+
+# ===================================================================
+
+model = Sequential()
+model.add (Convolution2D (32, 3, 3, input_shape = (5, 8, 8), border_mode = "same", activation = "relu", W_constraint = maxnorm(3), dim_ordering = "th"))
+model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
+model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
+model.add (Flatten ())
+# model.add (Dense (512, input_shape = (256, ), activation = 'relu', W_constraint = maxnorm(2)))
+# model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+# model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.3))
+model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.3))
+model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.3))
+model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.3))
+model.add (Dense (64))
+model.add (Dense (1))
+sgd = SGD(lr=lr_, momentum=momentum_, decay=decay_, nesterov=False)
+# model.compile(loss='categorical_crossentropy', optimizer=sgd)
+model.compile(loss='mse', optimizer=sgd)
+
+from keras.callbacks import EarlyStopping
+
+early_stopping = EarlyStopping (monitor = "val_loss", patience = 5, min_delta = 0)
+model.fit(X_train, Y_train, nb_epoch= epoch_, batch_size=batch_size_, verbose = True, validation_split = 0.1, callbacks = [early_stopping])
+
+filename = unclash ("ValueNetwork/value_network", ".h5")
+print (filename)
+model.save (filename)
+
+# ===================================================================
+
+model = Sequential()
+model.add (Convolution2D (32, 3, 3, input_shape = (5, 8, 8), border_mode = "same", activation = "relu", W_constraint = maxnorm(3), dim_ordering = "th"))
+model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
+model.add (Convolution2D (32, 3, 3, border_mode = "same", activation = "relu", W_constraint = maxnorm(3)))
+model.add (Flatten ())
+# model.add (Dense (512, input_shape = (256, ), activation = 'relu', W_constraint = maxnorm(2)))
+# model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+# model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.4))
+model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.4))
+model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.4))
+model.add (Dense (512, activation = 'relu', W_constraint = maxnorm(2)))
+model.add (Dropout(0.4))
+model.add (Dense (64))
+model.add (Dense (1))
+sgd = SGD(lr=lr_, momentum=momentum_, decay=decay_, nesterov=False)
+# model.compile(loss='categorical_crossentropy', optimizer=sgd)
+model.compile(loss='mse', optimizer=sgd)
+
+from keras.callbacks import EarlyStopping
+
+early_stopping = EarlyStopping (monitor = "val_loss", patience = 5, min_delta = 0)
+model.fit(X_train, Y_train, nb_epoch= epoch_, batch_size=batch_size_, verbose = True, validation_split = 0.1, callbacks = [early_stopping])
+
+filename = unclash ("ValueNetwork/value_network", ".h5")
+print (filename)
+model.save (filename)
+
+# ===================================================================
 
 Y_test_pred = model.predict(X_test, verbose=True)
 
