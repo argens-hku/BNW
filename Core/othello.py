@@ -235,7 +235,6 @@ class State ():
 
         return (ba, self.player)
 
-
     @staticmethod
     def readFromFile (filename):
 
@@ -385,7 +384,6 @@ class State ():
             temp.append (plane2)
             temp.append (plane3)
             return temp
-
 
     def checkMoves (self):
         self.findValidMoves ()
