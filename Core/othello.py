@@ -55,7 +55,7 @@ class State ():
         if self.firstMove == -1:
             self.firstMove = x
 
-        print ((x, y, self.player))
+        # print ((x, y, self.player))
         found = False
         for i in range (len(self.validMoves)):
             (le_x, le_y, changes) = self.validMoves [i]
@@ -75,9 +75,9 @@ class State ():
             temp.append (column)
 
         temp [x][y] = self.player
-        print (x, y)
+        # print (x, y)
         for (x, y) in changes:
-            print (x, y)
+            # print (x, y)
             temp [x][y] = self.player
 
         if self.player == 1:

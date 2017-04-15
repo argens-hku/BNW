@@ -86,6 +86,7 @@ class AbstractBoard ():
     def __init__ (self, size):
 
         self.size = size
+        self.end = False
         self.computer = Computer (player = -1)
         self.state.setAbsBoard (self)
         return
@@ -93,7 +94,6 @@ class AbstractBoard ():
     def setDisplayBoard (self, db):
         self.displayBoard = db
         return
-#    def __init__ (self, displayBoard, prevBoard, move);
 
     def move (self, x, y):
 
@@ -101,26 +101,27 @@ class AbstractBoard ():
         if s != None:
             self.state = s
             self.computer.updateMove (x, y)
+            if self.state.player == 0:
+                self.end = True
         else:
             self.displayBoard.highlightGrid (self.state.validMoves)
         self.updateDisplay ()
 
-        if self.state.player == 0:
-            self.end ()
-
-        while self.player != self.state.player:
+        while self.player != self.state.player and self.state.player != 0:
             (x, y) = self.computer.move ()
             s = self.state.move (x, y)
             if s != None:
                 self.state = s
                 self.computer.updateMove (x, y)
+                if self.state.player == 0:
+                    self.end = True
             else:
-                clearScreen ()
-                self.computer.tree.currentNode.state.print ()
-                print (x, y)
+                # clearScreen ()
+                # self.computer.tree.currentNode.state.print ()
+                # print (x, y)
                 break
             self.updateDisplay ()
-            
+
         # self.expand ()
 
     def updateDisplay (self):
@@ -133,12 +134,10 @@ class AbstractBoard ():
         if self.displayBoard == None:
             return
 
-        self.displayBoard.msg2Statusbar.emit (str)
-        return
+        if self.end == True:
+            return
 
-    def end (self):
-        while 1:
-            x = 1
+        self.displayBoard.msg2Statusbar.emit (str)
         return
 
     def isValid (self, x, y):
@@ -150,223 +149,158 @@ class AbstractBoard ():
 class Computer ():
 
     tree = None
-    evaluator = None
 
     def __init__ (self, player):
-        valueNetwork = load_model (valueNN)
-        self.evaluator = Evaluator (valueNetwork, border = border_bool, corner = corner_bool, liberty = liberty_bool)
-        self.tree = Tree (self.evaluator, player)
+        self.tree = Tree (player)
 
         return
 
     def updateMove (self, x, y):
+        print ("151")
         self.tree.updateMove (x, y)
+        print ("153")
 
     def move (self):
         return self.tree.getBestMove ()
 
-from keras.models import load_model
-class Evaluator ():
-
-    def __init__ (self, valueNN, border = "False", corner = "False", liberty = "False"):
-        self.valueNN = valueNN
-        self.border = border
-        self.corner = corner
-        self.liberty = liberty
-        return
-
-    def evaluate (self, state, player):
-        NN = []
-        NN.append (self.convertToNN (state.mirrored (), player))
-        X = np.asarray (NN)
-        value = self.valueNN.predict (X)
-        return value [0][0]
-
-    def convertToNN (self, board, player):
-        input_NN = []
-        white = []
-        black = []
-        empty = []
-
-        if self.border or self.corner:
-            border = []
-
-        if self.liberty:
-            moves = []
-
-        for i in range (size):
-            row_white = []
-            row_black = []
-            row_empty = []
-
-            if self.border or self.corner:
-                row_border = []
-
-            if self.liberty:
-                row_total = []
-
-            for j in range (size):
-
-                if self.border == True:
-                    if i == 0 or j == 0 or i == size-1 or j == size-1:
-                        row_border.append (1)
-                    else:
-                        row_border.append (0)
-                else:
-                    if self.corner == True:
-                        row_border.append (0)
-
-                piece = board [i][j] * player
-                if piece == 0:
-                    row_empty.append (1)
-                    row_black.append (0)
-                    row_white.append (0)
-                    if self.liberty:
-                        row_total.append (0)
-                else:
-                    if piece == 1:
-                        row_empty.append (0)
-                        row_black.append (1)
-                        row_white.append (0)
-                        if self.liberty:
-                            row_total.append (1)
-                    else:
-                        row_empty.append (0)
-                        row_black.append (0)
-                        row_white.append (1)
-                        if self.liberty:
-                            row_total.append (-1)
-
-            empty.append (row_empty)
-            white.append (row_white)
-            black.append (row_black)
-
-            if self.border or self.corner:
-                border.append (row_border)
-            if self.liberty:
-                moves.append (row_total)
-
-        if self.corner:
-            border [0][0] = border [0][size - 1] = border [size - 1][0] = border [size - 1][size - 1] = 4
-            border [0][1] = border [1][0] =  border [1][1] = -1
-            border [0][size - 2] = border [1][size - 1] =  border [1][size - 2] = -1
-            border [size - 2][0] = border [size - 1][1] =  border [size - 2][1] = -1
-            border [size - 2][size - 1] = border [size - 1][size - 2] = border [size - 1][size - 1] =  -1
-
-        e = np.asarray (empty)
-        w = np.asarray (white)
-        bl = np.asarray (black)
-
-        input_NN.append (e)
-        input_NN.append (w)
-        input_NN.append (bl)
-
-        if self.border or self.corner:
-            bd = np.asarray (border)
-            input_NN.append (bd)
-        
-        if self.liberty:
-            state = State (board = moves)
-            for i in range (size):
-                for j in range (size):
-                    moves [i][j] = 0
-
-            for (x, y, _) in state.validMoves:
-                moves [x][y] = 1
-
-            mv = np.asarray (moves)
-            input_NN.append (mv)
-
-        # print ("e", e.shape)
-        # print ("w", w.shape)
-        # print ("bl", bl.shape)
-
-        # b = np.asarray (board)
-        # print ("b.shape", b.shape)
-        return input_NN
-
 from othello import *
 from collections import deque
-
+from threading import Thread, Lock
+import threading
+from evaluator import Evaluator
+from time import sleep
 class Tree ():
 
-    currentNode = None
-    originalPlayer = 0
-    leaf = deque ([])
-    depth = 0
+    def __init__ (self, originalPlayer):
 
-    def __init__ (self, evaluator, originalPlayer):
-        self.evaluator = evaluator
         self.originalPlayer = originalPlayer
+
+        self.lock = Lock ()
+        self.priority = False
+        thread = Thread (target = self.expand, daemon = True)
+        thread.start ()
+        print ("Thread!!", threading.active_count ())
 
     def updateMove (self, x, y):
 
-        print ("Line 312")
+        self.priority = True
+        self.lock.acquire ()
+        print ("Self.currentNode.depth", self.currentNode.depth)
 
-        if self.currentNode == None:
-            state = State ()
-            state = state.move (x, y)
-            self.currentNode = Node (state = state)
-            self.currentNode.originalPlayer = self.originalPlayer
-            self.currentNode.evaluator = self.evaluator
-            self.currentNode.evaluate (depth = 2)
-            self.currentNode.evaluate (depth = 4)
-            self.depth = 4
+        # if self.currentNode == None:
+        #     state = State ()
+        #     state = state.move (x, y)
+        #     self.currentNode = Node (state = state)
+        #     self.currentNode.originalPlayer = self.originalPlayer
+        #     self.currentNode.evaluator = self.evaluator
+        #     self.currentNode.evaluate (depth = 2)
+        #     self.currentNode.evaluate (depth = 4)
+        #     self.depth = 4
 
-        else:
-            temp = self.currentNode
-            self.currentNode.reduceDepth ()
-            self.depth -= 1
-            if (x, y) in self.currentNode.children:
-                self.currentNode = self.currentNode.children [(x, y)]
+        # else:
+
+        # while self.currentNode.depth < 4:
+        #     self.nextNode = self.nextNode.expand ()
+
+        counter = 0
+        for i in self.currentNode.order:
+            (x1, y1, _) = self.currentNode.state.validMoves [i]
+            if (x1, y1) == (x, y):
+                break
             else:
-                print ("it doesn't exist!!", x, " ", y)
-            del temp
+                counter += 1   
 
-        self.expand ()
+        if (x, y) in self.currentNode.children:
+            self.currentNode = self.currentNode.children [(x, y)]
+            if counter != self.currentNode.parent.expandedChildNode:
+                self.nextNode = self.currentNode
+            self.currentNode.parent = None
+        else:
+            print (self.currentNode.expandedChildNode)
+            print (self.currentNode.depth)
+            print ("it doesn't exist!!", x, " ", y)
+
+
+        self.lock.release ()
+        self.priority = False
 
         return
+
+    def initialize (self):
+        self.currentNode = Node (state = State ())
+        self.currentNode.originalPlayer = self.originalPlayer
+        self.currentNode.evaluator = Evaluator (valueNN, border = border_bool, corner = corner_bool, liberty = liberty_bool)
+        self.nextNode = self.currentNode
 
     def getBestMove (self):
 
-        if self.currentNode == None:
-            state = State ()
-            self.currentNode = Node (state = state)
-            self.currentNode.originalPlayer = self.originalPlayer
-            self.currentNode.evaluator = self.evaluator
-            self.currentNode.evaluate (depth = 2)
-            self.currentNode.evaluate (depth = 4)
-            self.depth = 4
+        if len (self.currentNode.state.validMoves) == 1:
+            (x, y, _) = self.currentNode.state.validMoves [0]
+            return (x, y)
 
-        self.depth -= 1
-        self.expand ()
-        return self.currentNode.getBestMove ()
+        self.priority = True
+        self.lock.acquire ()
+        
+        if self.currentNode.depth < 4:
+            targetDepth = 64 - self.currentNode.state.bc - self.currentNode.state.wc - 1
+            if targetDepth > 4:
+                targetDepth = 4
+            while self.currentNode.depth < targetDepth:
+                self.nextNode = self.nextNode.expand ()
+
+        # if self.currentNode == None:
+        #     state = State ()
+        #     self.currentNode = Node (state = state)
+        #     self.currentNode.originalPlayer = self.originalPlayer
+        #     self.currentNode.evaluator = self.evaluator
+        #     self.currentNode.evaluate (depth = 2)
+        #     self.currentNode.evaluate (depth = 4)
+        #     self.depth = 4
+        move = self.currentNode.getBestMove ()
+        self.lock.release ()
+        self.priority = False
+        return move
 
     def expand (self):
+        
+        self.currentNode = Node (state = State ())
+        self.currentNode.originalPlayer = self.originalPlayer
+        self.currentNode.evaluator = Evaluator (valueNN, border = border_bool, corner = corner_bool, liberty = liberty_bool)
+        self.nextNode = self.currentNode
+        
+        while True:
+            if self.priority == True:
+                sleep (0.3)
+            self.lock.acquire ()
+            self.nextNode = self.nextNode.expand ()
 
-        self.depth += 1
-        self.currentNode.resetAlphaBeta ()
-        self.currentNode.evaluate (depth = self.depth)
-        return
+            # print ("======================")
+            # self.nextNode.state.print ()
+            # print (self.nextNode.depth)
+            # print ("======================")
+            self.lock.release ()
+
+            if self.currentNode.depth > (64 - self.currentNode.state.bc - self.currentNode.state.wc):
+                break
 
 import operator
 class Node ():
 
     minimum = -100
-    maximium = 100
+    maximum = 100
     neutral = 0
 
-    def __init__ (self, state = None, depth = 0, alpha = minimum, beta = maximium, parent = None):
+    def __init__ (self, state = None, alpha = minimum, beta = maximum, parent = None):
         self.state = state
-        self.depth = depth
         self.alpha = alpha
         self.beta = beta
         self.parent = parent
 
-        self.player = self.state.player
+        self.depth = 0
         self.children = {}
         self.value = None
         self.order = []
+        self.expandedChildNode = 0
 
         if self.parent != None:
             self.evaluator = self.parent.evaluator
@@ -374,98 +308,171 @@ class Node ():
 
         return
 
-    def evaluate (self, depth = 0):
-        if depth == 0 or len (self.state.validMoves) == 0:
-            if self.value != None:
-                return self.value
-            self.value = self.evaluator.evaluate (self.state, self.originalPlayer)
-            return self.value
-        
-        if self.depth >= depth:
-            if self.value != None:
-                return self.value
+    def expand (self):
+
+        self.state.print ()
 
         if self.state.player == 0:
-            score = self.originalPlayer * (self.state.bc - self.state.wc)
-            if score > 0:
-                return self.maximium
-            if score == 0:
-                return self.neutral
-            if score < 0:
-                return self.minimum
+            self.depth += 1
+            print (self.depth)
+            return self.nextNode ()
 
         if len (self.order) == 0:
             ordering = range (len (self.state.validMoves))
         else:
             ordering = self.order
-        newOrder = {}
+
+        order = {}
 
         if self.state.player == self.originalPlayer:
-            
+
             for i in ordering:
-                newOrder [i] = self.minimum
+                order [i] = self.minimum
 
             v = self.minimum
+            firstMove = False
+
             for i in ordering:
-                
+                if self.state.firstMove == -1:
+                    firstMove = True
                 (x, y, _) = self.state.validMoves [i]
                 
                 if (x, y) in self.children:
-                    self.children [(x,y)].updateAlphaBeta (alpha = self.alpha, beta = self.beta)
-
+                    self.children [(x, y)].updateAlphaBeta (alpha = self.alpha, beta = self.beta)
                 else:
                     childState = self.state.move (x, y)
                     childNode = Node (state = childState, alpha = self.alpha, beta = self.beta, parent = self)
                     self.children [(x, y)] = childNode
 
-                childvalue = self.children [(x, y)].evaluate (depth - 1)
-                newOrder [i] = childvalue
-                if childvalue > v:
-                    v = childvalue
+                childValue = self.children [(x, y)].evaluate ()
+                order [i] = childValue
+                if childValue > v:
+                    v = childValue
                 if v > self.alpha:
                     self.alpha = v
                 if self.beta <= self.alpha:
                     break
 
-            temp_lst = sorted (newOrder.items(), key = operator.itemgetter (1), reverse = True)
-            self.order = [pair [0] for pair in temp_lst]
-            return v
+                if firstMove:
+                    self.state.firstMove = -1
 
+            temp_lst = sorted (order.items (), key = operator.itemgetter (1), reverse = True)
         else:
 
             for i in ordering:
-                newOrder [i] = self.maximium
+                order [i] = self.maximum
 
-            v = self.maximium
+            v = self.maximum
+            firstMove = False
 
             for i in ordering:
-
+                if self.state.firstMove == -1:
+                    firstMove = True
                 (x, y, _) = self.state.validMoves [i]
-
-                if (x, y) in self.children:
-                    self.children [(x,y)].updateAlphaBeta (alpha = self.alpha, beta = self.beta)
-
-                else:
+                
+                if (x, y) not in self.children:
                     childState = self.state.move (x, y)
                     childNode = Node (state = childState, alpha = self.alpha, beta = self.beta, parent = self)
                     self.children [(x, y)] = childNode
 
-                childvalue = self.children [(x, y)].evaluate (depth -1)
-                newOrder [i] = childvalue
-                if childvalue  < v:
-                    v = childvalue
+                childValue = self.children [(x, y)].evaluate ()
+                order [i] = childValue
+                if childValue < v:
+                    v = childValue
                 if v < self.beta:
                     self.beta = v
                 if self.beta <= self.alpha:
                     break
 
-            temp_lst = sorted (newOrder.items(), key = operator.itemgetter (1))
-            self.order = [pair [0] for pair in temp_lst]
-            return v
+                if firstMove:
+                    self.state.firstMove = -1
+
+            temp_lst = sorted (order.items (), key = operator.itemgetter (1), reverse = False)
+
+        self.order = [pair [0] for pair in temp_lst]
+        self.value = v
+        self.depth += 1
+        if self.parent != None:
+            self.parent.expandedChildNode += 1
+            # print (self.parent.expandedChildNode, "/", len(self.parent.state.validMoves))
+        return self.nextNode ()
+
+    def nextNode (self):
+
+        parent = self.parent
+
+        if parent == None or parent.depth == self.depth + 1:
+            self.cleanse ()
+            return self.leftMost ()
+
+        if parent.expandedChildNode >= len (parent.state.validMoves):
+            return parent
+
+        # parent.state.print ()
+        # print (parent.state.validMoves)
+        # print (len (parent.state.validMoves))
+        # print (parent.order)
+        # print (parent.expandedChildNode)
+        
+
+        if parent.state.player == parent.originalPlayer:
+            if self.value > parent.alpha:
+                parent.alpha = self.value
+                parent.updateAlphaBeta (parent.alpha, parent.beta)
+        else:
+            if self.value < parent.beta:
+                parent.beta = self.value
+                parent.updateAlphaBeta (parent.alpha, parent.beta)
+        if parent.beta <= parent.alpha:
+            return parent
+
+        (x, y, _) = parent.state.validMoves [parent.order [parent.expandedChildNode]]
+
+        if not (x, y) in parent.children: 
+            childState = parent.state.move (x, y)
+            childNode = Node (state = childState, alpha = parent.alpha, beta = parent.beta, parent = parent)
+            parent.children [(x, y)] = childNode
+        # print (x, y)
+        return parent.children [(x, y)].leftMost ()
+    
+    def cleanse (self):
+        self.expandedChildNode = 0
+        self.resetAlphaBeta ()
+        for key in self.children:
+            self.children [key].cleanse ()
+
+        return
+
+    def leftMost (self):
+        if len (self.children) == 0:
+            return self
+
+        if len (self.order) == 0:
+            order = 0
+        else:
+            order = self.order [0]
+
+        (x, y, _) = self.state.validMoves [order]
+        return self.children [(x, y)].leftMost ()
+
+    def evaluate (self):
+
+        if self.value != None:
+            return self.value
+
+        value = self.evaluator.evaluate (self.state, self.originalPlayer)
+        self.value = value
+
+        return value
 
     def updateAlphaBeta (self, alpha, beta):
-        self.alpha = alpha
-        self.beta = beta
+        for i in range (self.expandedChildNode, len  (self.order)):
+            index = self.order [i]
+            (x, y, _) = self.state.validMoves [index]
+            if (x, y) in self.children:
+                self.children [(x, y)].alpha = alpha
+                self.children [(x, y)].beta = beta
+
         return
 
     def reduceDepth (self):
@@ -474,17 +481,35 @@ class Node ():
             child.reduceDepth ()
 
     def getBestMove (self):
-        if len (self.order) == 0:
-            self.evaluate (depth = 1)
-        (x, y, _) = self.state.validMoves [self.order [0]]
+        order = self.order [0]
+        (x, y, _) = self.state.validMoves [order]
         return (x, y)
-
 
     def resetAlphaBeta (self):
         self.alpha = self.minimum
-        self.beta = self.maximium
+        self.beta = self.maximum
         return
 
+    def print (self):
+        print (self.depth, )
+        if len (self.order) == 0:
+            ordering = range (len (self.state.validMoves))
+        else:
+            ordering = self.order
+            print ("Using self order")
+
+        for i in ordering:
+            (x, y, _) = self.state.validMoves [i]
+            if (x, y) in self.children:
+                print (self.children [(x, y)].depth,"(",x,y,")", end = ',')
+        print ("")
+        print ("---------------")
+        for i in ordering:
+            (x, y, _) = self.state.validMoves [i]
+            if (x, y) in self.children:
+                self.children [(x, y)].print ()
+
+    # def expandTo (self, depth):
 
 # ========================================== #
 
@@ -571,10 +596,9 @@ class Board (QFrame):
         for j in range (self.size):
             for i in range (self.size):
                 if self.absBoard.state.board[i][j] == 0:
-                    print (len (self.validMoves))
                     if not paintedMove:
                         if (i, j) in self.validMoves:
-                            self.fillGrid (painter, i, j, QColor (0, 255, 0, self.alpha))
+                            self.fillGrid (painter, i, j, QColor (0, 128, 0, self.alpha))
                             continue
                 if self.absBoard.state.board[i][j] == -1:
                     self.drawPiece (painter, i, j, white)
@@ -582,7 +606,6 @@ class Board (QFrame):
                 if self.absBoard.state.board[i][j] == 1:
                     self.drawPiece (painter, i, j, black)
                     continue
-
 
     def drawGrid (self, painter, color):
 
@@ -623,7 +646,7 @@ class Board (QFrame):
 
         self.alpha -= speed
 
-        if self.alpha < 127 and self.jumpCount < 2:
+        if self.alpha < 127 and self.jumpCount < 1:
             self.jumpCount += 1
             self.alpha = 255
 
@@ -634,7 +657,6 @@ class Board (QFrame):
 
         self.update ()
         return
-
 
     def mouseMoveEvent (self, e):
         (x, y) = self.getCoordinate (e)
@@ -653,7 +675,7 @@ class Board (QFrame):
             playerMove = playerMove + "White"
         playerMove = playerMove + "'s Move "
 
-        self.msg2Statusbar.emit(playerMove + "(" + str_x + ", " + str_y + ")")
+        self.absBoard.sendStatus(playerMove + "(" + str_x + ", " + str_y + ")")
 
         self.x = x
         self.y = y
