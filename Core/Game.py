@@ -3,6 +3,9 @@ from othello import State
 policyNN = "PolicyNetwork/policy_network.h5"
 valueNN = "ValueNetwork/value_network13.h5"
 
+# 2 for boders only
+# 9 for corner and border
+
 border_bool = True
 corner_bool = True
 liberty_bool = True
@@ -213,16 +216,20 @@ class Tree ():
         if (x, y) in self.currentNode.children:
             self.currentNode = self.currentNode.children [(x, y)]
             if counter != self.currentNode.parent.expandedChildNode:
-                self.nextNode = self.currentNode
+                self.nextNode = self.currentNode.leftMost ()
             self.currentNode.parent = None
+            self.currentNode.resetAlphaBeta ()
         else:
-            print (self.currentNode.expandedChildNode)
-            print (self.currentNode.depth)
-            print ("it doesn't exist!!", x, " ", y)
+            childState = self.currentNode.state.move (x, y)
+            childNode = Node (state = childState)
+            childNode.evaluator = self.currentNode.evaluator
+            childNode.originalPlayer = self.originalPlayer
+            
+            self.currentNode = childNode
+            self.nextNode = self.currentNode
 
-
-        self.lock.release ()
         self.priority = False
+        self.lock.release ()
 
         return
 
@@ -241,10 +248,17 @@ class Tree ():
         self.priority = True
         self.lock.acquire ()
         
-        if self.currentNode.depth < 4:
+        if self.currentNode == None:
+            self.priority = False
+            self.lock.release ()
+            sleep (0.5)
+            self.priority = True
+            self.lock.acquire ()
+
+        if self.currentNode.depth < 5:
             targetDepth = 64 - self.currentNode.state.bc - self.currentNode.state.wc - 1
-            if targetDepth > 4:
-                targetDepth = 4
+            if targetDepth > 5:
+                targetDepth = 5
             while self.currentNode.depth < targetDepth:
                 self.nextNode = self.nextNode.expand ()
 
@@ -269,10 +283,12 @@ class Tree ():
         self.nextNode = self.currentNode
         
         while True:
+            print ("Hi")
             if self.priority == True:
                 sleep (0.3)
             self.lock.acquire ()
             self.nextNode = self.nextNode.expand ()
+
 
             # print ("======================")
             # self.nextNode.state.print ()
@@ -338,7 +354,7 @@ class Node ():
                 (x, y, _) = self.state.validMoves [i]
                 
                 if (x, y) in self.children:
-                    self.children [(x, y)].updateAlphaBeta (alpha = self.alpha, beta = self.beta)
+                    self.children [(x, y)].updateAlphaBeta (self.alpha, self.beta)
                 else:
                     childState = self.state.move (x, y)
                     childNode = Node (state = childState, alpha = self.alpha, beta = self.beta, parent = self)
@@ -370,7 +386,9 @@ class Node ():
                     firstMove = True
                 (x, y, _) = self.state.validMoves [i]
                 
-                if (x, y) not in self.children:
+                if (x, y) in self.children:
+                    self.children [(x, y)].updateAlphaBeta (self.alpha, self.beta)
+                else:
                     childState = self.state.move (x, y)
                     childNode = Node (state = childState, alpha = self.alpha, beta = self.beta, parent = self)
                     self.children [(x, y)] = childNode
@@ -392,7 +410,7 @@ class Node ():
         self.order = [pair [0] for pair in temp_lst]
         self.value = v
         self.depth += 1
-        if self.parent != None:
+        if self.parent != None and self.depth == self.parent.depth:
             self.parent.expandedChildNode += 1
             # print (self.parent.expandedChildNode, "/", len(self.parent.state.validMoves))
         return self.nextNode ()
@@ -401,11 +419,19 @@ class Node ():
 
         parent = self.parent
 
-        if parent == None or parent.depth == self.depth + 1:
+        if parent == None:
             self.cleanse ()
             return self.leftMost ()
 
+        if parent.depth >= self.depth + 1:
+            self.cleanse ()
+            self.alpha = parent.alpha
+            self.beta = parent.beta
+            self.refreshAlphaBeta ()
+            return self.leftMost ()
+
         if parent.expandedChildNode >= len (parent.state.validMoves):
+            print ("433")
             return parent
 
         # parent.state.print ()
@@ -424,6 +450,7 @@ class Node ():
                 parent.beta = self.value
                 parent.updateAlphaBeta (parent.alpha, parent.beta)
         if parent.beta <= parent.alpha:
+            print ("452")
             return parent
 
         (x, y, _) = parent.state.validMoves [parent.order [parent.expandedChildNode]]
@@ -437,7 +464,8 @@ class Node ():
     
     def cleanse (self):
         self.expandedChildNode = 0
-        self.resetAlphaBeta ()
+        self.alpha = self.minimum
+        self.beta = self.maximum
         for key in self.children:
             self.children [key].cleanse ()
 
@@ -488,10 +516,14 @@ class Node ():
     def resetAlphaBeta (self):
         self.alpha = self.minimum
         self.beta = self.maximum
+        for key in self.children:
+            self.children[key].resetAlphaBeta ()
         return
 
     def print (self):
-        print (self.depth, )
+        if self.depth == 0:
+            return
+        print (self.depth)
         if len (self.order) == 0:
             ordering = range (len (self.state.validMoves))
         else:
@@ -509,7 +541,48 @@ class Node ():
             if (x, y) in self.children:
                 self.children [(x, y)].print ()
 
-    # def expandTo (self, depth):
+    def refreshAlphaBeta (self):
+        if len (self.children) == 0:
+            return self.evaluate ()
+
+        if self.state.player == self.originalPlayer:
+            v = self.minimum
+            for i in self.order:
+                (x, y, _) = self.state.validMoves [i]
+                key = (x, y)
+                if key in self.children:
+                    self.children[key].alpha = self.alpha
+                    self.children[key].beta = self.beta
+                    childValue = self.children [key].refreshAlphaBeta ()
+
+                if childValue > v:
+                    v = childValue
+                if v > self.alpha:
+                    self.alpha = v
+            
+            self.value = v
+            return self.value
+        else:
+            v = self.maximum
+            for i in self.order:
+                (x, y, _) = self.state.validMoves [i]
+                key = (x, y)
+                if key in self.children:
+                    self.children[key].alpha = self.alpha
+                    self.children[key].beta = self.beta
+                    childValue = self.children [key].refreshAlphaBeta ()
+                if childValue < v:
+                    v = childValue
+                if v < self.beta:
+                    self.beta = v
+                
+            self.value = v
+            return self.value
+        return
+
+
+
+
 
 # ========================================== #
 

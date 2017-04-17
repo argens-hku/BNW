@@ -176,34 +176,14 @@ def doTests (X1, X2, Y):
 
 	#-------------------------------------------
 
-	valueNN = "ValueNetwork/value_network22.h5"
+	valueNN = "ValueNetwork/final_network3.h5"
 	model = load_model (valueNN)
 	Y_pred = model.predict(X2, verbose=True)
-	result.append (("value_network22.h5: ", mse (Y_pred, Y)))
+	result.append (("final_network3.h5: ", mse (Y_pred, Y)))
 
 	#-------------------------------------------
 
-	valueNN = "ValueNetwork/value_network23.h5"
-	model = load_model (valueNN)
-	Y_pred = model.predict(X2, verbose=True)
-	result.append (("value_network23.h5: ", mse (Y_pred, Y)))
-
-	#-------------------------------------------
-
-	valueNN = "ValueNetwork/value_network24.h5"
-	model = load_model (valueNN)
-	Y_pred = model.predict(X2, verbose=True)
-	result.append (("value_network24.h5: ", mse (Y_pred, Y)))
-
-	#-------------------------------------------
-
-	valueNN = "ValueNetwork/value_network25.h5"
-	model = load_model (valueNN)
-	Y_pred = model.predict(X2, verbose=True)
-	result.append (("value_network25.h5: ", mse (Y_pred, Y)))
-
-
-for order in range (7):
+for order in range (8):
 
 	filename = trainingFilename + str (order + 1)
 	print (filename)

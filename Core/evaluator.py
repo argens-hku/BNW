@@ -9,11 +9,12 @@ neutral = 0
 
 class Evaluator ():
 
-    def __init__ (self, valueNN, border = "False", corner = "False", liberty = "False"):
+    def __init__ (self, valueNN, border = False, corner = False, liberty = False, hypercorner = False):
         self.valueNN = load_model (valueNN)
         self.border = border
         self.corner = corner
         self.liberty = liberty
+        self.hypercorner = hypercorner
         return
 
     def evaluate (self, state, player):
@@ -98,7 +99,10 @@ class Evaluator ():
                 moves.append (row_total)
 
         if self.corner:
-            border [0][0] = border [0][size - 1] = border [size - 1][0] = border [size - 1][size - 1] = 4
+            if self.hypercorner:
+                border [0][0] = border [0][size - 1] = border [size - 1][0] = border [size - 1][size - 1] = 10
+            else:
+                border [0][0] = border [0][size - 1] = border [size - 1][0] = border [size - 1][size - 1] = 4
             border [0][1] = border [1][0] =  border [1][1] = -1
             border [0][size - 2] = border [1][size - 1] =  border [1][size - 2] = -1
             border [size - 2][0] = border [size - 1][1] =  border [size - 2][1] = -1

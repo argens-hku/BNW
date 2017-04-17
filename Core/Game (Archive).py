@@ -571,7 +571,7 @@ class Board (QFrame):
         for j in range (self.size):
             for i in range (self.size):
                 if self.absBoard.state.board[i][j] == 0:
-                    print (len (self.validMoves))
+                    # print (len (self.validMoves))
                     if not paintedMove:
                         if (i, j) in self.validMoves:
                             self.fillGrid (painter, i, j, QColor (0, 255, 0, self.alpha))
