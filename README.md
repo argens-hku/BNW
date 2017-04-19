@@ -1,7 +1,7 @@
 # Playing Othello Using Deep Learning Neural Network
 
 This is a final year project done by Argens Ng and his mentor Dr. K. P. Chan of the University of Hong Kong
-
+------------------
 For a compressed light weight version (just for playing)
 - download Core.tar.gz
 ------------------
