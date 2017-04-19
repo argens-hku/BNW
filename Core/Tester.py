@@ -1,3 +1,6 @@
+# Author: Argens Ng
+# Description: This program tests neural networks in batch and clears screen to output in a neat manner
+
 size = 8
 result = []
 # currentDirectory = os.path.dirname(os.path.abspath(__file__))
@@ -8,36 +11,22 @@ parentDirectory = currentDirectory + "/.."
 trainingDirectory = parentDirectory + "/Byte"
 trainingFilename = trainingDirectory + "/Train_"
 
+# Description: Clears the standard output screen
 
 def clearScreen ():
 	print ("\033c")
 
-def query (question = "", choices = []):
-
-	if len (choices) == 0:
-		clearScreen ()
-		question = question +"\n\n"
-		answer = input (question)
-		
-	else:
-		for i in range (len (choices)):
-			question = question + "\n"
-			question = question + str(i) + ") "
-			question = question + choices [i]
-		question = question + "\n\n"
-
-		answer = len (choices)
-
-		while answer >= len (choices):
-			clearScreen ()
-			try:
-				answer = int (input (question))
-			except ValueError:
-				answer = len (choices)
-
-	return answer
-
 from othello import State
+
+# Description: Converts a condensed state (Byte/Train_) format into inputs for neural network with varying features
+# Input:
+#	[STR] line: a line in any of the training sets
+#	[STR] option: a string indicating feature option namely:
+#			border (or unprovided): border padding only
+#			corner_and_border: border padding highlighting corner while punishing the squares nearby
+#			moves and cb: corner_and_border and an additional layer with matrix of moves available highlighted with 1s
+# Output:
+#	[(5,8,8) INT] OR [(4,8,8) INT] a 5-8-8 or 4-8-8 integer matrix which stores selected feature. Feature option of "moves and cb" returns a 5,8,8 matrix
 
 def convertToNN (line, option = "border"):
 	board = []
@@ -119,29 +108,18 @@ def convertToNN (line, option = "border"):
 	# print ("b.shape", b.shape)
 	return board
 
-#  --------------- Getting Filename ----------------  #
-# q = "Which training set to use? (Default is 1.)"
-# while True:
-# 	try:
-# 		ans = query (question = q)
-# 		if len (ans) == 0:
-# 			order = 1
-# 			break
-# 		order = int (ans)
-# 	except ValueError:
-# 		continue
-# 	else:
-# 		break
-
-
-# Y = Y.reshape (Y.shape[0], Y.shape[1] * Y.shape[2])
-# print ("Y_shape", Y.shape)
-
 from keras.objectives import mean_squared_error
 from keras.models import load_model
 import tensorflow as tf
 
 #-------------------------------------------
+
+# Description: Helps calculate the mean squared error between testing set and prediction
+# Input:
+#	[(*, )FLOAT] Y_pred: a list of floats indidcating the prediction of the network
+#	[(*, )INT] Y: a list of integers indicating the winner of the game in the end (1 if it is the current player, -1 if it is not, 0 if it is a draw)
+# Output:
+#	[FLOAT] the mean squared error 
 
 def mse (Y_pred, Y):
 
@@ -157,6 +135,14 @@ def mse (Y_pred, Y):
 
 	return s/c
 
+
+# Description: A snippet that does test
+# Input:
+#	[(*, 8, 8, )INT] X1: training set with feature 1
+#	[(*, 8, 8, )INT] X2: training set with feature 2
+#	[(*, )FLOAT] Y: a list of integers indicating the winner of the game in the end (1 if it is the current player, -1 if it is not, 0 if it is a draw)
+# Output:
+#	[(*, (STR, FLOAT))] list of tuples with first entry of tuple being the tag/name and second being the mean squared error
 def doTests (X1, X2, Y):
 	global result
 

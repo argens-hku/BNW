@@ -1,5 +1,17 @@
+# Author: Argens Ng
+# Description: This program stores the implementation of the class State, which is responsible for all the game rule enforcement.
+
 class State ():
 
+    # Description: initializes a State object
+    # Input:
+    #   [STR] size: size of the board in one dimension (board should be square)
+    #   [(*, *) STR] board: an optional initial game board
+    #   [STR] player: the current player (1 being black, -1 being white, 0 being no one's or END GAME)
+    #   [STR] firstMove: the black players first move (for symmetry purposes)
+    #   [STR] absBoard: an abstract board handler
+    # Output:
+    #   an initialized state object
     def __init__ (self, size = 8, board = None, player = 1, firstMove = -1, absBoard = None):
         self.player = player
         self.size = size
@@ -51,6 +63,12 @@ class State ():
         self.count = (self.bc, self.wc)
         self.checkMoves ()
 
+    # Description: evolves a game state
+    # Input:
+    #   [INT] x: x coordinate of the move
+    #   [INT] y: y coordinate of the move
+    # Output:
+    #   [STATE] a new state, returns None if move is invalid
     def move (self, x, y):
         if self.firstMove == -1:
             self.firstMove = x
@@ -62,7 +80,7 @@ class State ():
             if x == le_x and y == le_y:
                 found = True
                 break
-#        (valid, changes) = self.isValid (x, y)
+
         if not found:
             self.sendStatus ("Invalid Move!!!")
             return None
@@ -88,6 +106,12 @@ class State ():
         state = State (board = temp, player = newPlayer, firstMove = self.firstMove, absBoard = self.absBoard)
         return state    
 
+    # Description: determines if a move is valid
+    # Input:
+    #   [INT] x: x coordinate of the move
+    #   [INT] y: y coordinate of the move
+    # Output:
+    #   [BOOL, (*, )(INT, INT))] tuple of validity and list of tuple (converting coordinates)
     def isValid (self, x, y):
 
         if x < 0 or y < 0 or x >= self.size or y >= self.size or self.board [x][y] != 0:
@@ -113,7 +137,10 @@ class State ():
             return (False, converts)
         else:
             return (True, converts)
-
+    
+    # Description: Prints itself with an 8 by 8 illustration
+    # Input: None
+    # Output: None (Standard Output)
     def print (self):
 
         for j in range (self.size):
@@ -134,7 +161,12 @@ class State ():
 
         print (s)
         return
-
+    
+    # Description: Prints to file with an 8 by 8 illustration, optionally together with a move
+    # Input:
+    #   [STR] filename: file to be written to
+    #   [(INT, INT)]move: the move
+    # Output: None (File Output)
     def printToFile (self, filename, move = (-1, -1)):
 
         outputFile = open (filename, 'a')
@@ -179,6 +211,7 @@ class State ():
 
         return
 
+    # Description: Returns a mirrored version of itself, with respect to first move such that every state begins with a (2,3) move
     def mirrored (self):
         temp = []
         for i in range (self.size):
@@ -203,6 +236,7 @@ class State ():
 
         return temp
 
+    # Description: Prints itself using condensed format, with 1 being current player's piece, 2 being opponent's and 0 being empty
     def asByte (self):
 
         temp = self.mirrored ()
@@ -234,7 +268,8 @@ class State ():
                         ba = ba + "2"
 
         return (ba, self.player)
-
+    
+    # Description: [Obsolete] Create a state from an obsolete storing format
     @staticmethod
     def readFromFile (filename):
 
@@ -259,7 +294,8 @@ class State ():
 
         state = State (board = board, player = player, size = size)
         return state
-
+    
+    # Description: [Obsolete] Getting obsolete features from a state
     def getFeatures (self, option = 0):
 
         # size = str (self.size) + " "
@@ -385,6 +421,7 @@ class State ():
             temp.append (plane3)
             return temp
 
+    # Description: Code snippet which checks the current available moves and change player control if necessary
     def checkMoves (self):
         self.findValidMoves ()
         if len (self.validMoves) == 0:
@@ -412,7 +449,15 @@ class State ():
                 self.sendStatus (msg)
 
     #------------------------------------
-
+    
+    # Description: Finding if a move can convert pieces in defined direction
+    # Input:
+    #   [INT] x: x-coordinate of the move
+    #   [INT] y: y-coordinate of the move
+    #   [INT] x_change: x-change of the direction to be probed
+    #   [INT] y_change: y-change of the direction to be probed
+    # Output:
+    #   [(BOOL, (*, )(INT, INT))] a tuple of boolean value (whether the move flips discs in the direction) and list of tuples (converting coordinates)
     def oneDirection (self, x, y, x_change, y_change):
         defaultReturn = (False, [])
         new_x = x + x_change
@@ -448,7 +493,8 @@ class State ():
             new_y += y_change
 
         return (False, [])
-
+    
+    # Description: finding valid moves all around, updates self.validMoves
     def findValidMoves (self):
         for j in range (self.size):
             for i in range (self.size):
@@ -456,11 +502,13 @@ class State ():
                 if valid:
                     v = (i, j, converts)
                     self.validMoves.append (v)
-
+    
+    # Description: an API for setting abstract board objects to be bound with this state object
     def setAbsBoard (self, absBoard):
         self.absBoard = absBoard
         return
 
+    # Description: Allows our state object to post notifications to GUI client of standard output
     def sendStatus (self, str):
         if self.absBoard == None:
             print (str)

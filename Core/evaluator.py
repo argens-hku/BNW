@@ -1,3 +1,6 @@
+# Author: Argens Ng
+# Description: This program stores the implementation of the class Evaluator, which is responsible for neural network evaluation during actual usage
+
 from keras.models import load_model
 import numpy as np
 from othello import State
@@ -8,7 +11,16 @@ maximum = 100
 neutral = 0
 
 class Evaluator ():
-
+    
+    # Description: initializes an Evaluator object
+    # Input:
+    #   [STR] valueNN: filename of the value network to be loaded
+    #   [BOOL] border: whether the boarder is a feature to be padded/added
+    #   [BOOL] corner: whether the corner is a feature to be padded/added. overwrites border if set to true
+    #   [BOOL] liberty: whether the freemoves is a feature to be padded/added
+    #   [BOOL] hypercorner: whether the corner should have extra value (4 -> 10)
+    # Output:
+    #   an initialized evaluator object
     def __init__ (self, valueNN, border = False, corner = False, liberty = False, hypercorner = False):
         self.valueNN = load_model (valueNN)
         self.border = border
@@ -16,7 +28,13 @@ class Evaluator ():
         self.liberty = liberty
         self.hypercorner = hypercorner
         return
-
+    
+    # Description: evaluates a state with respect to a player
+    # Input:
+    #   [STATE] state: the state object to be evaluated
+    #   [INT] player: whose perspective to be used (1 being black)
+    # Output:
+    #   [FLOAT] the neural network value
     def evaluate (self, state, player):
         
         if state.player == 0:
@@ -34,6 +52,12 @@ class Evaluator ():
         value = self.valueNN.predict (X)
         return value [0][0]
 
+    # Description: converts a board to a neural network input with respect to a player
+    # Input:
+    #   [(8,8)INT] board: the board positions
+    #   [INT] player: whose perspective to be used (1 being black)
+    # Output:
+    #   [(5,8,8) INT] OR [(4,8,8) INT] a 5-8-8 or 4-8-8 integer matrix which stores selected feature.
     def convertToNN (self, board, player):
         input_NN = []
         white = []

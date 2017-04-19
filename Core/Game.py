@@ -1,3 +1,6 @@
+# Author: Argens Ng
+# Description: This is the main program users can play against
+
 from othello import State
 
 policyNN = "PolicyNetwork/policy_network.h5"
@@ -14,9 +17,17 @@ size = 8
 
 #  --------------- Non-program Specific ----------------  #
 
+# Description: Clears the standard output screen
 def clearScreen ():
 	print ("\033c")
 
+# Description: Helping function which helps query the user for answers with or without choices
+# Input:
+#   [STR] question: questions to be asked
+#   [(*, ) STR] choices: [optional] choices for the user to choose from
+# Output:
+#   [STR] answer:   1) answer
+#                   2) index of choice [if choices are provided]
 def query (question = "", choices = []):
 
 	if len (choices) == 0:
@@ -73,6 +84,8 @@ from PyQt5.QtWidgets import QDesktopWidget, QMainWindow, QFrame, QApplication
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QPainter, QColor 
 
+
+# This is the class that maintains game logic at the upmost layer
 class AbstractBoard ():
 
     possibleMoves = []
@@ -149,6 +162,7 @@ class AbstractBoard ():
 
 # ========================================== #
 
+# This is the AI interface that provides moves
 class Computer ():
 
     tree = None
@@ -172,6 +186,8 @@ from threading import Thread, Lock
 import threading
 from evaluator import Evaluator
 from time import sleep
+
+# This is the class that conducts tree search in a background manner
 class Tree ():
 
     def __init__ (self, originalPlayer):
@@ -299,6 +315,7 @@ class Tree ():
             if self.currentNode.depth > (64 - self.currentNode.state.bc - self.currentNode.state.wc):
                 break
 
+# This is the class for individual nodes. Most functions are there to maintain correctness and traversal order in a localized manner.
 import operator
 class Node ():
 
@@ -580,12 +597,9 @@ class Node ():
             return self.value
         return
 
-
-
-
-
 # ========================================== #
 
+# This is the outtermost UI component
 class Othello(QMainWindow):
     
     def __init__(self):
@@ -616,6 +630,7 @@ class Othello(QMainWindow):
 
 # ========================================== #
 
+# This is the core and innermost UI component. User interact with this directly
 from PyQt5 import QtCore
 class Board (QFrame):
 

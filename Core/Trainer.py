@@ -1,35 +1,22 @@
+# Author: Argens Ng
+# Description: This program trains neural network and save it for future use
+
 import os.path
 from pathlib import Path
 
 #  --------------- Non-program Specific ----------------  #
 
+# Description: Clears the standard output screen
+
 def clearScreen ():
 	print ("\033c")
 
-def query (question = "", choices = []):
-
-	if len (choices) == 0:
-		clearScreen ()
-		question = question +"\n\n"
-		answer = input (question)
-		
-	else:
-		for i in range (len (choices)):
-			question = question + "\n"
-			question = question + str(i) + ") "
-			question = question + choices [i]
-		question = question + "\n\n"
-
-		answer = len (choices)
-
-		while answer >= len (choices):
-			clearScreen ()
-			try:
-				answer = int (input (question))
-			except ValueError:
-				answer = len (choices)
-
-	return answer
+# Description: Helps unclash a filename so as to prevent overwriting files
+# Input:
+#	[STR] name: filename
+#	[STR] extension: extension
+# Output:
+#	[STR] suitable filename that is not used
 
 def unclash (name, extension):
 	counter = 1
@@ -43,6 +30,14 @@ def unclash (name, extension):
 
 #  --------------- Program Specific ----------------  #
 
+# Description: Outputs a grid for policy network training
+# Input:
+#	[INT] x: x index of the move
+#	[INT] y: y index of the move
+# Output:
+#	[(8,8) INT] a 8-by-8 list of list with 1 where the move is played and 0s elsewhere
+
+size = 8
 def createOutputGrid (x, y):
 	grid = []
 	for j in range (size):
@@ -56,6 +51,12 @@ def createOutputGrid (x, y):
 	return grid
 
 from othello import State
+
+# Description: Converts a condensed state (Byte/Train_) format into inputs for neural network using feature "Border, Corner and Freemove"
+# Input:
+#	[STR] line: a line in any of the training sets
+# Output:
+#	[(5,8,8) INT] a 5-8-8 integer matrix which stores features namely raw board position, padding layer and freemove matrix
 
 def convertToNN (line):
 	board = []
@@ -143,22 +144,6 @@ parentDirectory = currentDirectory + "/.."
 trainingDirectory = parentDirectory + "/Byte"
 trainingFilename = trainingDirectory + "/Train_"
 
-#  --------------- Getting Filename ----------------  #
-# q = "Which training set to use? (Default is 1.)"
-# while True:
-# 	try:
-# 		ans = query (question = q)
-# 		if len (ans) == 0:
-# 			order = 1
-# 			break
-# 		order = int (ans)
-# 	except ValueError:
-# 		continue
-# 	else:
-# 		break
-# filename = trainingFilename + str (order)
-# print (filename)
-
 #  --------------- Getting Data ----------------  #
 
 list_X = []
@@ -169,6 +154,8 @@ gameCounter = 0
 gameEnd = 1000000000000000000
 
 import numpy as np
+
+# When i = 0, /../Byte/Train_1 is used
 i = 0
 index = i + 1
 filename = trainingFilename + str (index)
@@ -214,18 +201,23 @@ import numpy as np
 
 X = np.asarray (list_X)
 Y = np.asarray (list_winner)
+
+# Uncomment to train with dense layers
 # X = X.reshape (X.shape [0], X.shape [1] * X.shape [2] * X.shape [3])
+
+# Uncomment to train policy network
 # Y = np.asarray (list_move)
 
 print ("X_shape", X.shape)
-# print ("Y_shape", Y.shape)
-
-# Y = Y.reshape (Y.shape[0], Y.shape[1] * Y.shape[2])
 print ("Y_shape", Y.shape)
 
+# Uncomment to train policy network
+# Y = Y.reshape (Y.shape[0], Y.shape[1] * Y.shape[2])
+# print ("Y_shape", Y.shape)
 
-# from sklearn.model_selection import train_test_split
-# X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=1)
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=1)
 
 # print ("X_train", X_train.shape)
 # print ("X_test", X_test.shape)

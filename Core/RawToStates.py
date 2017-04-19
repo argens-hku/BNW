@@ -1,3 +1,6 @@
+# Author: Argens Ng
+# Description: This program converts raw match data into particular state in a match
+
 import os.path
 import random
 from pathlib import Path
@@ -5,13 +8,26 @@ from othello import *
 
 # ================ Non Program Specific ================ #
 
+# Description: Clears the standard output screen
 def clearScreen ():
 	print ("\033c")
 
+# Description: Display a message after clearing screen
+# Input:
+#	Msg: message to be displayed
+# Output: None
 def displayMsg (msg = ""):
 	clearScreen ()
 	print (msg)
 
+
+# Description: Helping function which helps query the user for answers with or without choices
+# Input:
+#	[STR] question: questions to be asked
+#	[(*, ) STR] choices: [optional] choices for the user to choose from
+# Output:
+#	[STR] answer: 	1) answer
+#					2) index of choice [if choices are provided]
 def query (question = "", choices = []):
 
 	if len (choices) == 0:
@@ -37,11 +53,12 @@ def query (question = "", choices = []):
 
 	return (answer)
 
-def warningQuit (msg = ""):
-	clearScreen ()
-	print (msg)
-	quit ()
-
+# Description: Helps unclash a filename so as to prevent overwriting files
+# Input:
+#	[STR] name: filename
+#	[STR] extension: extension
+# Output:
+#	[STR] suitable filename that is not used
 def unclash (name):
 	counter = 1
 
@@ -56,6 +73,10 @@ def unclash (name):
 
 # ================== Program Specific ================== #
 
+# Description: Collect user options specific to this program
+# Input: None
+# Output:
+#	[(STR, INT, INT)] tuple of filename, output format (0 being compressed states aand 1 being neat and presentable states) and number of games to decompress
 def collectOptions ():
 
 	q = "What is the filename?"	
